@@ -881,92 +881,272 @@
         </div>`;
       }).join("");
     }
+// ----------------------------
+// PGN-based heuristics (no engine)
+// ----------------------------
 
-    function setCCTipsHtml(html, kind="good"){
-      const el = $("#ccTips");
-      if(!el) return;
-      el.className = "notice " + (kind || "");
-      el.innerHTML = html;
+// Extract only the move section from a PGN string
+function pgnMoveText(pgn){
+  if(!pgn) return "";
+  // Remove headers [Event "..."]
+  let s = pgn.replace(/\[.*?\]\s*\n/g, " ");
+  // Remove comments {...} and ; comments
+  s = s.replace(/\{[^}]*\}/g, " ");
+  s = s.replace(/;[^\n]*/g, " ");
+  // Remove NAGs like $1
+  s = s.replace(/\$\d+/g, " ");
+  // Remove variations ( ... )  (simple best-effort, not perfect for nested)
+  while(/\([^()]*\)/.test(s)) s = s.replace(/\([^()]*\)/g, " ");
+  // Normalize spaces
+  s = s.replace(/\s+/g, " ").trim();
+  return s;
+}
+
+// Convert PGN move text into a list of SAN moves (["e4","e5","Nf3"...])
+function sanMovesFromPgn(pgn){
+  const text = pgnMoveText(pgn);
+
+  // Remove results tokens
+  let s = text.replace(/\b1-0\b|\b0-1\b|\b1\/2-1\/2\b|\*\b/g, " ");
+
+  // Remove move numbers "1." "23..." etc.
+  s = s.replace(/\b\d+\.(\.\.)?\b/g, " ");
+
+  // Split by space and filter out junk
+  const tokens = s.split(" ").map(t => t.trim()).filter(Boolean);
+
+  // Filter out any remaining artifacts
+  const moves = tokens.filter(t => !/^\d+$/.test(t));
+  return moves;
+}
+
+function isPawnMove(san){
+  // pawn moves start with file letter OR are captures like exd5
+  // also promotions like e8=Q
+  return /^[a-h](x[a-h][1-8])?[1-8](=?[QRBN])?[\+#]?$/.test(san) || /^[a-h]x[a-h][1-8](=?[QRBN])?[\+#]?$/.test(san);
+}
+
+function isPieceMove(san, pieceLetter){
+  // pieceLetter = "N","B","R","Q","K"
+  return new RegExp("^" + pieceLetter + "[a-h1-8x=+#-]*").test(san);
+}
+
+function isCastle(san){
+  return san === "O-O" || san === "O-O-O";
+}
+
+function stripCheckMate(san){
+  return san.replace(/[+#]$/g, "");
+}
+
+// Best-effort: count how many times a piece letter appears for each side
+function analyzeOneGameHeuristics(game, username){
+  const moves = sanMovesFromPgn(game?.pgn || "");
+  const first20Plies = moves.slice(0, 20); // first 20 half-moves
+  const first10Plies = moves.slice(0, 10);
+
+  let whiteCastlePly = null;
+  let blackCastlePly = null;
+
+  let whiteQueenMovesEarly = 0;
+  let blackQueenMovesEarly = 0;
+
+  let whitePawnMovesEarly = 0;
+  let blackPawnMovesEarly = 0;
+
+  let whiteMinorDevelopEarly = 0; // N/B moves early
+  let blackMinorDevelopEarly = 0;
+
+  let checksEarly = 0; // how often players give check early (often means forcing line or risky play)
+
+  // Helper: whose move is this ply? 0=white,1=black
+  for(let i=0;i<first20Plies.length;i++){
+    const sanRaw = first20Plies[i];
+    const san = stripCheckMate(sanRaw);
+
+    const isWhite = (i % 2 === 0);
+
+    if(isCastle(san)){
+      if(isWhite && whiteCastlePly === null) whiteCastlePly = i+1;
+      if(!isWhite && blackCastlePly === null) blackCastlePly = i+1;
     }
 
-    function generateTipsFromGames(games, username){
-      if(!games?.length){
-        setCCTipsHtml("No games found to analyze.", "warn");
-        return;
-      }
+    if(sanRaw.endsWith("+")) checksEarly++;
 
-      const last = games.slice(0,8);
-      let shortGames = 0;
-      let gotMated = 0;
-      let stalemate = 0;
-      let resigned = 0;
-
-      for(const g of last){
-        const moveNums = g?.pgn ? (g.pgn.match(/\d+\./g) || []).length : 0;
-        if(moveNums && moveNums <= 20) shortGames++;
-
-        const w = (g.white?.result || "").toLowerCase();
-        const b = (g.black?.result || "").toLowerCase();
-        const both = `${w} ${b}`;
-
-        if(both.includes("checkmated")) gotMated++;
-        if(both.includes("stalemate")) stalemate++;
-        if(both.includes("resigned")) resigned++;
-      }
-
-      const bullets = [];
-      bullets.push(`<b>${username}</b>: analyzed <b>${last.length}</b> recent games (latest month).`);
-      bullets.push(`<b>Rule #1:</b> every move = <b>Checks → Captures → Threats</b>, then “is anything hanging?”`);
-
-      if(shortGames >= 2){
-        bullets.push(`<b>Quick games:</b> Several ended fast. Next 3 games: pause 3 seconds before every move and scan threats.`);
-      } else {
-        bullets.push(`<b>Consistency:</b> Keep the same thinking routine even when you’re winning.`);
-      }
-
-      if(gotMated >= 1){
-        bullets.push(`<b>King safety:</b> You got checkmated recently. Prioritize: castle early, and don’t open lines near your king.`);
-      }
-
-      if(stalemate >= 1){
-        bullets.push(`<b>Endgame:</b> You hit stalemate recently. When up material: trade pieces, keep pawns moving, and give the enemy king squares.`);
-      }
-
-      if(resigned >= 1){
-        bullets.push(`<b>Resign smarter:</b> Before resigning, check: (1) any checks, (2) any captures, (3) any forced trades.`);
-      }
-
-      bullets.push(`<b>10-minute plan:</b> play 1 game → write 1 sentence: “I missed ___ because I didn’t check ___.”`);
-
-      setCCTipsHtml(
-        `<ul style="margin:0 0 0 18px">${bullets.map(t => `<li style="margin:6px 0">${t}</li>`).join("")}</ul>`,
-        "good"
-      );
+    // Queen moves in first 10 plies
+    if(i < 10 && isPieceMove(san, "Q")){
+      if(isWhite) whiteQueenMovesEarly++;
+      else blackQueenMovesEarly++;
     }
 
-    async function analyzeChesscom(username){
-      username = (username || "").trim();
-      if(!username) throw new Error("Enter a Chess.com username.");
-
-      setCCStatus("Loading archives…", "warn");
-      const archives = await fetchJson(`https://api.chess.com/pub/player/${encodeURIComponent(username)}/games/archives`);
-      const list = archives.archives || [];
-      if(!list.length) throw new Error("No archives found for that username.");
-
-      const latestArchiveUrl = list[list.length - 1];
-
-      setCCStatus("Loading games…", "warn");
-      const month = await fetchJson(latestArchiveUrl);
-
-      const games = (month.games || []);
-      games.sort((a,b) => (b.end_time || 0) - (a.end_time || 0));
-
-      localStorage.setItem(CHESSCOM_USER_KEY, username);
-
-      setCCStatus(`Loaded ${games.length} games from latest month for ${username}.`, "good");
-      renderCCGames(games);
-      generateTipsFromGames(games, username);
+    // Pawn moves in first 10 plies
+    if(i < 10 && isPawnMove(san)){
+      if(isWhite) whitePawnMovesEarly++;
+      else blackPawnMovesEarly++;
     }
+
+    // Minor piece development in first 10 plies
+    if(i < 10 && (isPieceMove(san, "N") || isPieceMove(san, "B"))){
+      if(isWhite) whiteMinorDevelopEarly++;
+      else blackMinorDevelopEarly++;
+    }
+  }
+
+  // Determine which side is the user
+  const userLower = (username || "").toLowerCase();
+  const whiteUser = (game?.white?.username || "").toLowerCase() === userLower;
+  const blackUser = (game?.black?.username || "").toLowerCase() === userLower;
+
+  // If we can't tell (API mismatch), default to "user is white"
+  const userIsWhite = whiteUser ? true : (blackUser ? false : true);
+
+  const userQueenMovesEarly = userIsWhite ? whiteQueenMovesEarly : blackQueenMovesEarly;
+  const userPawnMovesEarly  = userIsWhite ? whitePawnMovesEarly  : blackPawnMovesEarly;
+  const userMinorDevelopEarly = userIsWhite ? whiteMinorDevelopEarly : blackMinorDevelopEarly;
+  const userCastlePly = userIsWhite ? whiteCastlePly : blackCastlePly;
+
+  // Length estimate (move numbers count)
+  const moveNumberCount = (game?.pgn ? (game.pgn.match(/\d+\./g) || []).length : 0);
+
+  // Result stuff
+  const wRes = (game?.white?.result || "").toLowerCase();
+  const bRes = (game?.black?.result || "").toLowerCase();
+  const both = `${wRes} ${bRes}`;
+
+  const userLost =
+    (userIsWhite && (wRes === "checkmated" || wRes === "resigned" || wRes === "timeout" || wRes === "abandoned")) ||
+    (!userIsWhite && (bRes === "checkmated" || bRes === "resigned" || bRes === "timeout" || bRes === "abandoned"));
+
+  const userCheckmated =
+    (userIsWhite && wRes === "checkmated") || (!userIsWhite && bRes === "checkmated");
+
+  return {
+    userIsWhite,
+    userQueenMovesEarly,
+    userPawnMovesEarly,
+    userMinorDevelopEarly,
+    userCastlePly,
+    checksEarly,
+    moveNumberCount,
+    userLost,
+    userCheckmated,
+    url: game?.url || ""
+  };
+}
+
+function generateTipsFromGames(games, username){
+  // games should already be sorted newest first
+  const tipsEl = document.getElementById("ccTips");
+  if(!tipsEl){
+    // If the element is missing, don’t crash the page
+    return;
+  }
+
+  if(!games?.length){
+    tipsEl.className = "notice warn";
+    tipsEl.textContent = "No games found to analyze.";
+    return;
+  }
+
+  const sample = games.slice(0, 10);
+  const stats = {
+    shortGames: 0,
+    noCastleEarly: 0,
+    earlyQueen: 0,
+    lowDevelopment: 0,
+    checkmated: 0,
+    losses: 0,
+    total: sample.length
+  };
+
+  const examples = {
+    earlyQueen: null,
+    noCastle: null,
+    lowDev: null,
+    short: null,
+    mate: null
+  };
+
+  for(const g of sample){
+    const h = analyzeOneGameHeuristics(g, username);
+
+    if(h.moveNumberCount && h.moveNumberCount <= 20){
+      stats.shortGames++;
+      if(!examples.short) examples.short = h.url;
+    }
+
+    if(h.userLost) stats.losses++;
+    if(h.userCheckmated){
+      stats.checkmated++;
+      if(!examples.mate) examples.mate = h.url;
+    }
+
+    // "Castle early" heuristic: by ply 14 (~move 7)
+    if(h.userCastlePly === null || h.userCastlePly > 14){
+      stats.noCastleEarly++;
+      if(!examples.noCastle) examples.noCastle = h.url;
+    }
+
+    // "Queen early" heuristic: 2+ queen moves in first 10 plies
+    if(h.userQueenMovesEarly >= 2){
+      stats.earlyQueen++;
+      if(!examples.earlyQueen) examples.earlyQueen = h.url;
+    }
+
+    // "Low dev" heuristic: fewer than 2 minor piece moves in first 10 plies
+    if(h.userMinorDevelopEarly < 2){
+      stats.lowDevelopment++;
+      if(!examples.lowDev) examples.lowDev = h.url;
+    }
+  }
+
+  const bullets = [];
+  bullets.push(`<b>${username}</b>: analyzed <b>${stats.total}</b> most recent games (latest month).`);
+
+  // Most important: pick 1 focus
+  // Priority: checkmate > no castle > low development > early queen > short games
+  let focus = null;
+
+  if(stats.checkmated >= 1) focus = "kingSafety";
+  else if(stats.noCastleEarly >= 4) focus = "castle";
+  else if(stats.lowDevelopment >= 4) focus = "develop";
+  else if(stats.earlyQueen >= 4) focus = "queen";
+  else if(stats.shortGames >= 4) focus = "slowDown";
+
+  bullets.push(`<b>Rule #1:</b> Every move = <b>Checks → Captures → Threats</b>, then “is anything hanging?”`);
+
+  if(focus === "kingSafety"){
+    const ex = examples.mate ? ` <a class="mono" href="${examples.mate}" target="_blank" rel="noopener">(example)</a>` : "";
+    bullets.push(`<b>Main issue: King safety.</b> You got checkmated recently.${ex} Aim to: castle by move 7, don’t push pawns in front of your king early, and trade queens if you’re under attack.`);
+  } else if(focus === "castle"){
+    const ex = examples.noCastle ? ` <a class="mono" href="${examples.noCastle}" target="_blank" rel="noopener">(example)</a>` : "";
+    bullets.push(`<b>Main issue: Castling late.</b>${ex} For the next 5 games: decide your castling side by move 4 and castle by move 7 whenever possible.`);
+  } else if(focus === "develop"){
+    const ex = examples.lowDev ? ` <a class="mono" href="${examples.lowDev}" target="_blank" rel="noopener">(example)</a>` : "";
+    bullets.push(`<b>Main issue: Slow development.</b>${ex} In the first 10 moves: develop knights/bishops before moving the same pawn twice. Try: Nf3/Nc3 + Bc4/Bb5 style setups (simple and solid).`);
+  } else if(focus === "queen"){
+    const ex = examples.earlyQueen ? ` <a class="mono" href="${examples.earlyQueen}" target="_blank" rel="noopener">(example)</a>` : "";
+    bullets.push(`<b>Main issue: Early queen adventures.</b>${ex} Beginner rule: don’t move your queen twice in the opening unless you’re winning material. Develop minors first.`);
+  } else if(focus === "slowDown"){
+    const ex = examples.short ? ` <a class="mono" href="${examples.short}" target="_blank" rel="noopener">(example)</a>` : "";
+    bullets.push(`<b>Main issue: Games ending too fast.</b>${ex} For your next 3 games: take a 3-second pause before every move and do C→C→T. This alone prevents most blunders.`);
+  } else {
+    bullets.push(`<b>Nice:</b> Your openings look reasonably stable. Next step is consistency—use the same thinking routine even when you feel confident.`);
+  }
+
+  // Add a mini “scoreboard”
+  bullets.push(`<b>Scoreboard (last ${stats.total}):</b>`);
+  bullets.push(`• Checkmated: <b>${stats.checkmated}</b>`);
+  bullets.push(`• Didn’t castle by move ~7: <b>${stats.noCastleEarly}</b>`);
+  bullets.push(`• Low development early: <b>${stats.lowDevelopment}</b>`);
+  bullets.push(`• Early queen re-moves: <b>${stats.earlyQueen}</b>`);
+  bullets.push(`• Short games (≤20 moves): <b>${stats.shortGames}</b>`);
+
+  bullets.push(`<b>10-minute plan:</b> 1 puzzle → 1 game → write: “I missed ___ because I didn’t check ___.”`);
+
+  tipsEl.className = "notice good";
+  tipsEl.innerHTML = `<ul style="margin:0 0 0 18px">${bullets.map(t => `<li style="margin:6px 0">${t}</li>`).join("")}</ul>`;
+}
 
     function clearChesscom(){
       localStorage.removeItem(CHESSCOM_USER_KEY);
@@ -1098,3 +1278,4 @@
   </script>
 </body>
 </html>
+
