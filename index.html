@@ -227,9 +227,8 @@
           </div>
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-            <button class="btn primary"
-              onclick="showApp(); showView('notes'); document.getElementById('analysis').scrollIntoView({behavior:'smooth'})">
-              Analyze my Chess.com games
+            <button class="btn primary" onclick="openChesscomAnalysis()">
+              Analyze my Chess.com games 
             </button>
             <a class="btn" href="https://www.chess.com" target="_blank" rel="noopener">Chess.com</a>
           </div>
@@ -614,7 +613,24 @@
       $("#modePill").textContent = "Landing";
       render();
     }
-    function showView(name){
+    function openChesscomAnalysis(){
+  showApp();
+  showView("notes");
+
+  // Wait for the Notes view to show before scrolling/focusing
+  setTimeout(() => {
+    const analysis = document.getElementById("analysis");
+    if(analysis){
+      analysis.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    const input = document.getElementById("chesscomUser");
+    if(input){
+      input.focus();
+      input.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, 80);
+}
       $$(".view").forEach(v => v.style.display = "none");
       const target = $(`#view-${name}`);
       if(target) target.style.display = "";
@@ -852,3 +868,4 @@
   </script>
 </body>
 </html>
+
