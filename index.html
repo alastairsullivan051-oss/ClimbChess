@@ -613,11 +613,22 @@
       $("#modePill").textContent = "Landing";
       render();
     }
-    function openChesscomAnalysis(){
+   function showView(name){
+  $$(".view").forEach(v => v.style.display = "none");
+  const target = document.querySelector(`#view-${name}`);
+  if(target) target.style.display = "";
+
+  $$(".menu .btn[data-view]").forEach(b => b.style.background = "");
+  const btn = document.querySelector(`.menu .btn[data-view="${name}"]`);
+  if(btn) btn.style.background = "rgba(255,255,255,.10)";
+
+  if(name === "notes") wireChesscomUI();
+}
+
+function openChesscomAnalysis(){
   showApp();
   showView("notes");
 
-  // Wait for the Notes view to show before scrolling/focusing
   setTimeout(() => {
     const analysis = document.getElementById("analysis");
     if(analysis){
@@ -631,17 +642,6 @@
     }
   }, 80);
 }
-      $$(".view").forEach(v => v.style.display = "none");
-      const target = $(`#view-${name}`);
-      if(target) target.style.display = "";
-      $$(".menu .btn[data-view]").forEach(b => b.style.background = "");
-      const btn = $(`.menu .btn[data-view="${name}"]`);
-      if(btn) btn.style.background = "rgba(255,255,255,.10)";
-
-      // If user navigates to Notes, ensure Chess.com UI is wired
-      if(name === "notes") wireChesscomUI();
-    }
-
     // ----------------------------
     // Streak logic
     // ----------------------------
@@ -868,4 +868,5 @@
   </script>
 </body>
 </html>
+
 
