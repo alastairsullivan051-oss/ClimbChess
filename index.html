@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ClimbChess — Beginner Training</title>
-  <meta name="description" content="ClimbChess helps beginners who don’t know what to study. One clear task per day: puzzle + plan + habit." />
+  <meta name="description" content="ClimbChess helps beginners who don’t know what to study. One clear task per day: puzzle + plan + habit. Now supports Chess.com public game analysis." />
 
   <style>
     :root{
@@ -150,6 +150,10 @@
     .check input{margin-top:2px;transform:scale(1.1)}
     .mono{font-family:var(--mono)}
     .views > .view{display:none}
+
+    /* Added: simple two-column row layout used in Notes analysis section */
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+
     iframe.puzzle{
       width:100%;
       max-width:560px;
@@ -158,6 +162,14 @@
       border-radius:18px;
       background:rgba(255,255,255,.03);
     }
+    input, textarea{
+      width:100%;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.22);
+      color:var(--text);
+      padding:12px;border-radius:14px;outline:none;
+    }
+    textarea{resize:vertical}
     .footer{
       margin-top:24px;
       padding:20px 0;
@@ -169,6 +181,7 @@
       .app{grid-template-columns:1fr}
       .sidebar{position:relative;top:auto}
       iframe.puzzle{height:520px}
+      .row{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -206,6 +219,20 @@
             ClimbChess is for beginners who feel overwhelmed by openings, videos, and random tips.
             We keep it simple: <b>one puzzle</b>, <b>one habit</b>, and <b>one short plan</b> you can repeat.
           </p>
+
+          <!-- Added: Chess.com analysis promo at top -->
+          <div class="notice warn" style="margin-top:12px">
+            <b>NEW: Chess.com game analysis</b><br/>
+            Enter your Chess.com username and load your recent public games. Next: we’ll generate beginner-friendly notes from patterns.
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+            <button class="btn primary"
+              onclick="showApp(); showView('notes'); document.getElementById('analysis').scrollIntoView({behavior:'smooth'})">
+              Analyze my Chess.com games
+            </button>
+            <a class="btn" href="https://www.chess.com" target="_blank" rel="noopener">Chess.com</a>
+          </div>
 
           <div class="grid2">
             <div class="feat">
@@ -474,8 +501,37 @@
 
           <div class="hr"></div>
 
+          <!-- Added: anchor + Chess.com analysis section -->
+          <div id="analysis"></div>
+
+          <div class="notice" style="margin-bottom:12px">
+            <b>Chess.com analysis (public games):</b> enter your username and load your recent games.
+          </div>
+
+          <div class="card pad" style="background:rgba(255,255,255,.03)">
+            <div class="row" style="margin-top:6px">
+              <div>
+                <label class="muted" style="font-weight:900;font-size:12px;display:block;margin-bottom:8px">Chess.com username</label>
+                <input id="chesscomUser" placeholder="example: hikaru" />
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+                  <button class="btn primary" id="btnLoadChesscom">Load recent games</button>
+                  <button class="btn" id="btnClearChesscom">Disconnect</button>
+                </div>
+                <div class="hr"></div>
+                <div class="notice" id="chesscomStatus">Not connected.</div>
+              </div>
+
+              <div>
+                <b>Recent games</b>
+                <div class="notice" id="chesscomGames" style="margin-top:10px">No games loaded.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
           <label class="muted" style="font-weight:900;font-size:12px;display:block;margin-bottom:8px">Patterns that beat me lately</label>
-          <textarea id="notes" style="width:100%;min-height:140px;border:1px solid var(--stroke);background:rgba(0,0,0,.22);color:var(--text);padding:12px;border-radius:14px;outline:none;resize:vertical"
+          <textarea id="notes" style="min-height:140px"
             placeholder="Example: I miss back rank mates. I forget to ask what my opponent is threatening."></textarea>
 
           <div class="hr"></div>
@@ -565,6 +621,9 @@
       $$(".menu .btn[data-view]").forEach(b => b.style.background = "");
       const btn = $(`.menu .btn[data-view="${name}"]`);
       if(btn) btn.style.background = "rgba(255,255,255,.10)";
+
+      // If user navigates to Notes, ensure Chess.com UI is wired
+      if(name === "notes") wireChesscomUI();
     }
 
     // ----------------------------
@@ -617,6 +676,111 @@
             ? "Last step: apply the habit in a game—ask what your opponent is threatening."
             : "All done. Keep it short and come back tomorrow.";
       $("#todayTip").textContent = tip;
+    }
+
+    // ----------------------------
+    // Chess.com: load recent games (public API)
+    // ----------------------------
+    const CHESSCOM_USER_KEY = "cc_username";
+
+    async function fetchJson(url){
+      const res = await fetch(url);
+      if(!res.ok) throw new Error(`Request failed (${res.status})`);
+      return res.json();
+    }
+
+    function setCCStatus(msg, kind=""){
+      const el = $("#chesscomStatus");
+      if(!el) return;
+      el.className = "notice " + (kind ? kind : "");
+      el.textContent = msg;
+    }
+
+    function renderGames(games){
+      const box = $("#chesscomGames");
+      if(!box) return;
+
+      if(!games?.length){
+        box.textContent = "No games found.";
+        return;
+      }
+
+      box.innerHTML = games.slice(0,5).map(g => {
+        const white = g.white?.username || "White";
+        const black = g.black?.username || "Black";
+        const result = `${g.white?.result || "?"} / ${g.black?.result || "?"}`;
+        const tc = g.time_control ? `TC ${g.time_control}` : "";
+        const link = g.url ? `<a href="${g.url}" target="_blank" rel="noopener" class="mono">Open</a>` : "";
+        return `<div style="margin-bottom:10px">
+          <b>${white}</b> vs <b>${black}</b>
+          <div class="muted" style="font-size:12px;margin-top:2px">${result} ${tc}</div>
+          <div style="margin-top:4px">${link}</div>
+        </div>`;
+      }).join("");
+    }
+
+    async function loadChesscomGames(username){
+      username = (username || "").trim();
+      if(!username) throw new Error("Enter a Chess.com username.");
+
+      setCCStatus("Loading archives…", "warn");
+      const archives = await fetchJson(`https://api.chess.com/pub/player/${encodeURIComponent(username)}/games/archives`);
+      const list = archives.archives || [];
+      if(!list.length) throw new Error("No archives found for that username.");
+
+      const latestArchiveUrl = list[list.length - 1];
+
+      setCCStatus("Loading games…", "warn");
+      const month = await fetchJson(latestArchiveUrl);
+
+      const games = month.games || [];
+      games.sort((a,b) => (b.end_time || 0) - (a.end_time || 0));
+
+      setCCStatus(`Connected: ${username}. Loaded ${games.length} games from latest month.`, "good");
+      renderGames(games);
+
+      localStorage.setItem(CHESSCOM_USER_KEY, username);
+
+      // Optional: auto-add a note header
+      const notesEl = $("#notes");
+      if(notesEl && !notesEl.value.trim()){
+        notesEl.value = `Chess.com: ${username}\n\nPatterns to fix:\n- `;
+      }
+    }
+
+    function disconnectChesscom(){
+      localStorage.removeItem(CHESSCOM_USER_KEY);
+      setCCStatus("Disconnected.");
+      const box = $("#chesscomGames");
+      if(box) box.textContent = "No games loaded.";
+    }
+
+    function wireChesscomUI(){
+      const btnLoad = $("#btnLoadChesscom");
+      const btnClear = $("#btnClearChesscom");
+      const input = $("#chesscomUser");
+
+      if(btnLoad && !btnLoad.dataset.wired){
+        btnLoad.dataset.wired = "1";
+        btnLoad.onclick = async () => {
+          try{
+            await loadChesscomGames(input?.value || "");
+          } catch(e){
+            setCCStatus(e.message || String(e), "bad");
+          }
+        };
+      }
+
+      if(btnClear && !btnClear.dataset.wired){
+        btnClear.dataset.wired = "1";
+        btnClear.onclick = disconnectChesscom;
+      }
+
+      const saved = localStorage.getItem(CHESSCOM_USER_KEY);
+      if(saved && input && !input.value){
+        input.value = saved;
+        setCCStatus(`Saved username: ${saved}. Click “Load recent games”.`, "warn");
+      }
     }
 
     // ----------------------------
@@ -683,264 +847,8 @@
     });
 
     // Init
+    wireChesscomUI();
     showLanding();
   </script>
 </body>
 </html>
-<div class="card pad" style="margin-top:14px">
-  <h2>Connect Lichess</h2>
-  <p class="muted" style="margin-top:6px">
-    Connect your Lichess account so ClimbChess can read your recent games and generate your daily plan.
-  </p>
-
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-    <button class="btn primary" id="btnLichessLogin">Login with Lichess</button>
-    <button class="btn" id="btnLichessLogout">Disconnect</button>
-  </div>
-
-  <div class="hr"></div>
-  <div class="notice" id="lichessStatus">Not connected.</div>
-
-  <div class="hr"></div>
-  <b>Recent games (last 5)</b>
-  <div class="notice" id="gamesBox" style="margin-top:10px">Connect to load games.</div>
-</div>
-<script>
-  // ---------------------------
-  // Lichess OAuth (PKCE) — client-side
-  // Based on Lichess official client-side OAuth demo + updated endpoints
-  // ---------------------------
-  const LICHESS_CLIENT_ID = "climbchess"; // can be a constant string :contentReference[oaicite:2]{index=2}
-  const LICHESS_SCOPES = [
-    "read:account", // read profile/account
-    "read:games"    // read games (needed for game download)
-  ].join(" ");
-
-  const TOKEN_KEY = "lichess_access_token";
-  const VERIFIER_KEY = "lichess_pkce_verifier";
-  const STATE_KEY = "lichess_oauth_state";
-
-  const $ = (s) => document.querySelector(s);
-
-  function base64url(bytes) {
-    return btoa(String.fromCharCode(...bytes))
-      .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-  }
-
-  async function sha256(str) {
-    const data = new TextEncoder().encode(str);
-    const digest = await crypto.subtle.digest("SHA-256", data);
-    return new Uint8Array(digest);
-  }
-
-  function randomString(len = 64) {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
-    let out = "";
-    const arr = crypto.getRandomValues(new Uint8Array(len));
-    for (let i = 0; i < len; i++) out += chars[arr[i] % chars.length];
-    return out;
-  }
-
-  function setStatus(msg, kind="") {
-    const el = $("#lichessStatus");
-    if (!el) return;
-    el.className = "notice " + (kind ? kind : "");
-    el.textContent = msg;
-  }
-
-  function getRedirectUri() {
-    // Must match exactly what we send to Lichess
-    return window.location.origin + window.location.pathname;
-  }
-
-  async function lichessLogin() {
-    const verifier = randomString(64);
-    const state = randomString(24);
-    localStorage.setItem(VERIFIER_KEY, verifier);
-    localStorage.setItem(STATE_KEY, state);
-
-    const challenge = base64url(await sha256(verifier));
-    const redirectUri = getRedirectUri();
-
-    // Authorization endpoint :contentReference[oaicite:3]{index=3}
-    const url = new URL("https://lichess.org/oauth");
-    url.searchParams.set("response_type", "code");
-    url.searchParams.set("client_id", LICHESS_CLIENT_ID);
-    url.searchParams.set("redirect_uri", redirectUri);
-    url.searchParams.set("scope", LICHESS_SCOPES);
-    url.searchParams.set("code_challenge_method", "S256");
-    url.searchParams.set("code_challenge", challenge);
-    url.searchParams.set("state", state);
-
-    window.location.href = url.toString();
-  }
-
-  async function exchangeCodeForToken(code) {
-    const verifier = localStorage.getItem(VERIFIER_KEY);
-    const expectedState = localStorage.getItem(STATE_KEY);
-    const redirectUri = getRedirectUri();
-
-    if (!verifier) throw new Error("Missing PKCE verifier. Try logging in again.");
-
-    // Token endpoint changed to https://lichess.org/api/token :contentReference[oaicite:4]{index=4}
-    const body = new URLSearchParams();
-    body.set("grant_type", "authorization_code");
-    body.set("code", code);
-    body.set("code_verifier", verifier);
-    body.set("redirect_uri", redirectUri);
-    body.set("client_id", LICHESS_CLIENT_ID);
-
-    const res = await fetch("https://lichess.org/api/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body
-    });
-
-    if (!res.ok) {
-      const t = await res.text();
-      throw new Error("Token exchange failed: " + t);
-    }
-    const data = await res.json();
-    if (!data.access_token) throw new Error("No access_token returned.");
-    localStorage.setItem(TOKEN_KEY, data.access_token);
-
-    // cleanup
-    localStorage.removeItem(VERIFIER_KEY);
-    localStorage.removeItem(STATE_KEY);
-
-    return data.access_token;
-  }
-
-  function getToken() {
-    return localStorage.getItem(TOKEN_KEY);
-  }
-
-  function logout() {
-    localStorage.removeItem(TOKEN_KEY);
-    setStatus("Disconnected.");
-    const g = $("#gamesBox");
-    if (g) g.textContent = "Connect to load games.";
-  }
-
-  async function lichessApi(path, opts = {}) {
-    const token = getToken();
-    if (!token) throw new Error("Not connected.");
-    const res = await fetch("https://lichess.org" + path, {
-      ...opts,
-      headers: {
-        ...(opts.headers || {}),
-        "Authorization": "Bearer " + token
-      }
-    });
-    if (!res.ok) throw new Error("Lichess API error: " + res.status);
-    return res;
-  }
-
-  async function loadAccountAndGames() {
-    setStatus("Connected. Loading your account…");
-    const accountRes = await lichessApi("/api/account");
-    const account = await accountRes.json();
-
-    setStatus(`Connected as ${account.username}. Loading recent games…`, "good");
-
-    // Games endpoint commonly used: /api/games/user/{username} :contentReference[oaicite:5]{index=5}
-    // It returns NDJSON by default; we parse line-by-line.
-    const gamesRes = await lichessApi(`/api/games/user/${encodeURIComponent(account.username)}?max=5`, {
-      headers: { "Accept": "application/x-ndjson" }
-    });
-
-    const text = await gamesRes.text();
-    const lines = text.trim().split("\n").filter(Boolean);
-    const games = lines.map(line => {
-      try { return JSON.parse(line); } catch { return null; }
-    }).filter(Boolean);
-
-    const box = $("#gamesBox");
-    if (box) {
-      if (!games.length) {
-        box.textContent = "No games found.";
-      } else {
-        box.innerHTML = games.map(g => {
-          const white = g.players?.white?.user?.name || "White";
-          const black = g.players?.black?.user?.name || "Black";
-          const result = g.winner ? (g.winner === "white" ? "1-0" : "0-1") : "½-½";
-          const speed = g.speed || "game";
-          return `<div style="margin-bottom:8px">
-            <b>${white}</b> vs <b>${black}</b> — <span class="mono">${result}</span> <span class="tag" style="margin-left:6px">${speed}</span>
-          </div>`;
-        }).join("");
-      }
-    }
-  }
-
-  // Handle redirect callback
-  async function handleOAuthCallback() {
-    const url = new URL(window.location.href);
-    const code = url.searchParams.get("code");
-    const state = url.searchParams.get("state");
-    const expectedState = localStorage.getItem(STATE_KEY);
-
-    if (!code) return; // not a callback
-    if (!state || !expectedState || state !== expectedState) {
-      setStatus("OAuth state mismatch. Try logging in again.", "bad");
-      return;
-    }
-
-    try {
-      setStatus("Finishing login…");
-      await exchangeCodeForToken(code);
-
-      // clean URL (remove ?code=...)
-      url.searchParams.delete("code");
-      url.searchParams.delete("state");
-      window.history.replaceState({}, "", url.toString());
-
-      await loadAccountAndGames();
-    } catch (e) {
-      setStatus(String(e.message || e), "bad");
-    }
-  }
-
-  // Wire up buttons (only if the buttons exist on the page)
-  window.addEventListener("DOMContentLoaded", async () => {
-    const loginBtn = $("#btnLichessLogin");
-    const logoutBtn = $("#btnLichessLogout");
-
-    if (loginBtn) loginBtn.onclick = lichessLogin;
-    if (logoutBtn) logoutBtn.onclick = logout;
-
-    await handleOAuthCallback();
-
-    // If already connected, load data
-    if (getToken()) {
-      try { await loadAccountAndGames(); }
-      catch { setStatus("Connected token found, but failed to load. Try reconnecting.", "warn"); }
-    }
-  });
-</script>
-<div class="card pad" style="margin-top:14px">
-  <h2>Connect Chess.com</h2>
-  <p class="muted" style="margin-top:6px">
-    Enter your Chess.com username to load your recent games (public data).
-  </p>
-
-  <div class="row" style="margin-top:10px">
-    <div>
-      <label>Chess.com username</label>
-      <input id="chesscomUser" placeholder="example: hikaru" />
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-        <button class="btn primary" id="btnLoadChesscom">Load recent games</button>
-        <button class="btn" id="btnClearChesscom">Disconnect</button>
-      </div>
-      <div class="hr"></div>
-      <div class="notice" id="chesscomStatus">Not connected.</div>
-    </div>
-
-    <div>
-      <b>Recent games</b>
-      <div class="notice" id="chesscomGames" style="margin-top:10px">No games loaded.</div>
-    </div>
-  </div>
-</div>
-
-
