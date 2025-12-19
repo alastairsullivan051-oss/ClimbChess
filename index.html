@@ -308,26 +308,7 @@
     Click this card to open your Daily Plan (with timer + auto focus).
   </div>
 </div>
-
-
-            <div class="check">
-              <input type="checkbox" disabled checked />
-              <div>
-                <b>2) Learn one pattern (2 min)</b>
-                <div class="muted">Fork / pin / back rank / hanging piece.</div>
-              </div>
-            </div>
-
-            <div class="check">
-              <input type="checkbox" disabled checked />
-              <div>
-                <b>3) Apply the habit (3 min)</b>
-                <div class="muted">Before every move: “What is my opponent threatening?”</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="hr"></div>
+        <div class="hr"></div>
           <div class="notice warn">
             If you only do one thing: do the puzzle, then write the pattern you missed.
           </div>
@@ -439,6 +420,85 @@
         </main>
       </div>
     </section>
+<!-- =========================
+     PAGE: DAILY PLAN
+========================== -->
+<section class="page" id="page-daily">
+  <div class="card pad">
+    <div class="sectionTitle">
+      <div>
+        <h2>Daily Plan</h2>
+        <p id="dailySubtitle" class="muted">10 minutes. One focus. No memorization.</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" data-nav="#landing">← Back</button>
+        <button class="btn" data-nav="#training">Training Hub</button>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="notice" id="dailyFocusBox">Loading today’s focus…</div>
+
+    <div class="hr"></div>
+
+    <div class="row2">
+      <div>
+        <h3>Steps</h3>
+
+        <div class="checklist" style="margin-top:10px">
+          <div class="check">
+            <input id="dailyStep1" type="checkbox" />
+            <div>
+              <b id="dailyStep1Title">Puzzle</b>
+              <div class="muted" id="dailyStep1Desc">3–6 minutes</div>
+            </div>
+          </div>
+
+          <div class="check">
+            <input id="dailyStep2" type="checkbox" />
+            <div>
+              <b id="dailyStep2Title">Pattern</b>
+              <div class="muted" id="dailyStep2Desc">2 minutes</div>
+            </div>
+          </div>
+
+          <div class="check">
+            <input id="dailyStep3" type="checkbox" />
+            <div>
+              <b id="dailyStep3Title">Habit</b>
+              <div class="muted" id="dailyStep3Desc">3 minutes</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn primary" id="btnDailyStart">Start session</button>
+          <button class="btn" id="btnDailyNext">Next step</button>
+          <button class="btn" id="btnDailyReset">Reset today</button>
+        </div>
+      </div>
+
+      <div>
+        <h3>Timer</h3>
+        <div class="notice good" id="dailyTimerBox" style="margin-top:10px">
+          Ready when you are.
+        </div>
+
+        <div class="hr"></div>
+
+        <h3>Quick links</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+          <button class="btn" data-nav="#puzzle">Open puzzle page</button>
+          <button class="btn" data-nav="#analysis">Chess.com analysis</button>
+          <a class="btn" href="https://lichess.org/training" target="_blank" rel="noopener">Lichess training</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
     <!-- =========================
          PAGE: PUZZLE
@@ -783,13 +843,12 @@
       }
       if(routeName === "daily"){
   renderDailyPlan();
-  wireDailyUI();
-}
+  wireDailyUI();}
 
     function navigate(hash){
       if(!routes[hash]) hash = "#landing";
-      window.location.hash = hash;
-    }
+      window.location.hash = hash;}
+      }
 
     function onRoute(){
       const hash = window.location.hash || "#landing";
@@ -797,15 +856,21 @@
       showPage(routeName);
     }
 
-    function wireNavButtons(){
-document.addEventListener("keydown", (e) => {
-  if(e.key !== "Enter") return;
-  const el = document.activeElement;
-  if(!el) return;
-  const nav = el.getAttribute && el.getAttribute("data-nav");
-  if(nav) navigate(nav);
-});
-    }
+   function wireNavButtons(){
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-nav]");
+    if(!btn) return;
+    const hash = btn.getAttribute("data-nav");
+    if(hash) navigate(hash);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if(e.key !== "Enter") return;
+    const el = document.activeElement;
+    const nav = el?.getAttribute?.("data-nav");
+    if(nav) navigate(nav);
+  });
+}
 
     // ============================
     // Streak + UI render
@@ -1447,100 +1512,6 @@ function wireDailyUI(){
     });
   }
 }
-<!-- =========================
-     PAGE: DAILY PLAN
-========================== -->
-<section class="page" id="page-daily">
-  <div class="card pad">
-    <div class="sectionTitle">
-      <div>
-        <h2>Daily Plan</h2>
-        <p id="dailySubtitle" class="muted">10 minutes. One focus. No memorization.</p>
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn" data-nav="#landing">← Back</button>
-        <button class="btn" data-nav="#training">Training Hub</button>
-      </div>
-    </div>
-
-    <div class="hr"></div>
-
-    <div class="notice" id="dailyFocusBox">
-      Loading today’s focus…
-    </div>
-
-    <div class="hr"></div>
-
-    <div class="row2">
-      <div>
-        <h3>Steps</h3>
-
-        <div class="checklist" style="margin-top:10px">
-          <div class="check">
-            <input id="dailyStep1" type="checkbox" />
-            <div>
-              <b id="dailyStep1Title">Puzzle</b>
-              <div class="muted" id="dailyStep1Desc">3–6 minutes</div>
-            </div>
-          </div>
-
-          <div class="check">
-            <input id="dailyStep2" type="checkbox" />
-            <div>
-              <b id="dailyStep2Title">Pattern</b>
-              <div class="muted" id="dailyStep2Desc">2 minutes</div>
-            </div>
-          </div>
-
-          <div class="check">
-            <input id="dailyStep3" type="checkbox" />
-            <div>
-              <b id="dailyStep3Title">Habit</b>
-              <div class="muted" id="dailyStep3Desc">3 minutes</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="hr"></div>
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn primary" id="btnDailyStart">Start session</button>
-          <button class="btn" id="btnDailyNext">Next step</button>
-          <button class="btn" id="btnDailyReset">Reset today</button>
-        </div>
-
-        <div class="muted" style="font-size:12px;margin-top:10px;line-height:1.5">
-          This saves “today’s progress” locally in your browser.
-        </div>
-      </div>
-
-      <div>
-        <h3>Timer</h3>
-        <div class="notice good" id="dailyTimerBox" style="margin-top:10px">
-          Ready when you are.
-        </div>
-
-        <div class="hr"></div>
-
-        <h3>One sentence reflection</h3>
-        <div class="notice" style="margin-top:10px">
-          After your game, write one line:<br/>
-          <span class="mono">“I missed a ___ because I didn’t check ___.”</span>
-        </div>
-
-        <div class="hr"></div>
-
-        <h3>Quick links</h3>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-          <button class="btn" data-nav="#puzzle">Open puzzle page</button>
-          <button class="btn" data-nav="#analysis">Chess.com analysis</button>
-          <a class="btn" href="https://lichess.org/training" target="_blank" rel="noopener">Lichess training</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
     // ============================
     // Events
     // ============================
@@ -1617,4 +1588,5 @@ function wireDailyUI(){
   </script>
 </body>
 </html>
+
 
