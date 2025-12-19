@@ -493,7 +493,59 @@
             </div>
             <button class="btn primary" id="btnSaveNotes">Save</button>
           </div>
+<!-- CHESS.COM ANALYSIS (DEDICATED PAGE) -->
+<div class="card pad view" id="view-analysis">
+  <div class="sectionTitle">
+    <div>
+      <h2>Chess.com Game Analysis</h2>
+      <p>Enter your username to get instant beginner-friendly tips.</p>
+    </div>
+    <button class="btn" onclick="showLanding()">← Back</button>
+  </div>
 
+  <div class="hr"></div>
+
+  <div class="notice">
+    We analyze your <b>recent public Chess.com games</b> and generate simple improvement tips (no engine).
+  </div>
+
+  <div style="max-width:520px;margin-top:14px">
+    <label class="muted" style="font-weight:900;font-size:12px;display:block;margin-bottom:8px">
+      Chess.com username
+    </label>
+    <input id="ccUser" placeholder="example: hikaru" />
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+      <button class="btn primary" id="btnAnalyzeCC">Analyze games</button>
+      <button class="btn" id="btnClearCC">Clear</button>
+    </div>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="notice" id="ccStatus">Waiting for username.</div>
+
+  <div class="hr"></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+    <div>
+      <b>Recent games</b>
+      <div class="notice" id="ccGames" style="margin-top:10px">No games loaded.</div>
+    </div>
+
+    <div>
+      <b>Instant tips</b>
+      <div class="notice good" id="ccTips" style="margin-top:10px">
+        Enter a username and click “Analyze games” (or press Enter).
+      </div>
+    </div>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="notice warn">
+    If your games are private, Chess.com’s public API won’t return them.
+  </div>
+</div>
           <div class="hr"></div>
 
           <label class="muted" style="font-weight:900;font-size:12px;display:block;margin-bottom:8px">Patterns that beat me lately</label>
@@ -956,3 +1008,4 @@
   </script>
 </body>
 </html>
+
