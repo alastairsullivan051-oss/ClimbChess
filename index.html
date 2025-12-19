@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ClimbChess — Beginner Training</title>
-  <meta name="description" content="ClimbChess helps beginners who don’t know what to study. One clear task per day: puzzle + plan + habit. Now supports Chess.com public game analysis." />
+  <meta name="description" content="ClimbChess helps beginners who don’t know what to study. One clear task per day: puzzle + plan + habit. Includes Chess.com public game analysis." />
 
   <style>
     :root{
@@ -102,6 +102,7 @@
     .pad{padding:20px}
     h1{margin:10px 0 8px;font-size:44px;line-height:1.05}
     h2{margin:0;font-size:22px}
+    h3{margin:0;font-size:16px}
     .sub{color:var(--muted);font-size:16px;line-height:1.55;max-width:62ch}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
     .feat{
@@ -151,9 +152,6 @@
     .mono{font-family:var(--mono)}
     .views > .view{display:none}
 
-    /* Added: simple two-column row layout used in Notes analysis section */
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
-
     iframe.puzzle{
       width:100%;
       max-width:560px;
@@ -181,7 +179,6 @@
       .app{grid-template-columns:1fr}
       .sidebar{position:relative;top:auto}
       iframe.puzzle{height:520px}
-      .row{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -220,15 +217,14 @@
             We keep it simple: <b>one puzzle</b>, <b>one habit</b>, and <b>one short plan</b> you can repeat.
           </p>
 
-          <!-- Added: Chess.com analysis promo at top -->
           <div class="notice warn" style="margin-top:12px">
             <b>NEW: Chess.com game analysis</b><br/>
-            Enter your Chess.com username and load your recent public games. Next: we’ll generate beginner-friendly notes from patterns.
+            Enter your Chess.com username and get instant beginner tips from your recent public games.
           </div>
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-            <button class="btn primary" onclick="openChesscomAnalysis()">
-              Analyze my Chess.com games 
+            <button class="btn primary" onclick="openChesscomPage()">
+              Analyze my Chess.com games
             </button>
             <a class="btn" href="https://www.chess.com" target="_blank" rel="noopener">Chess.com</a>
           </div>
@@ -488,7 +484,7 @@
           </div>
         </div>
 
-        <!-- NOTES -->
+        <!-- NOTES (clean notes only) -->
         <div class="card pad view" id="view-notes">
           <div class="sectionTitle">
             <div>
@@ -500,42 +496,8 @@
 
           <div class="hr"></div>
 
-          <!-- Added: anchor + Chess.com analysis section -->
-          <div id="analysis"></div>
-
-          <div class="notice" style="margin-bottom:12px">
-            <b>Chess.com analysis (public games):</b> enter your username and load your recent games.
-          </div>
-
-          <div class="card pad" style="background:rgba(255,255,255,.03)">
-            <div class="row" style="margin-top:6px">
-              <div>
-                <label class="muted" style="font-weight:900;font-size:12px;display:block;margin-bottom:8px">Chess.com username</label>
-                <input id="chesscomUser" placeholder="example: hikaru" />
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-                  <button class="btn primary" id="btnLoadChesscom">Load recent games</button>
-                  <button class="btn" id="btnClearChesscom">Disconnect</button>
-                </div>
-                <div class="hr"></div>
-                <div class="notice" id="chesscomStatus">Not connected.</div>
-              </div>
-
-              <div>
-                <b>Recent games</b>
-                <div class="notice" id="chesscomGames" style="margin-top:10px">No games loaded.</div>
-                <div class="hr"></div>
-                <b>Instant tips</b>
-                <div class="notice" id="chesscomTips" style="margin-top:10px">
-                  Enter a username to generate tips.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="hr"></div>
-
           <label class="muted" style="font-weight:900;font-size:12px;display:block;margin-bottom:8px">Patterns that beat me lately</label>
-          <textarea id="notes" style="min-height:140px"
+          <textarea id="notes" style="min-height:180px"
             placeholder="Example: I miss back rank mates. I forget to ask what my opponent is threatening."></textarea>
 
           <div class="hr"></div>
@@ -549,6 +511,60 @@
 
           <div class="muted" style="font-size:12px;margin-top:10px;line-height:1.5">
             This saves locally in your browser (no accounts yet).
+          </div>
+        </div>
+
+        <!-- CHESS.COM ANALYSIS (DEDICATED PAGE) -->
+        <div class="card pad view" id="view-analysis">
+          <div class="sectionTitle">
+            <div>
+              <h2>Chess.com Game Analysis</h2>
+              <p>Enter your username to get instant beginner-friendly tips.</p>
+            </div>
+            <button class="btn" onclick="showLanding()">← Back</button>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="notice">
+            We analyze your <b>recent public Chess.com games</b> and generate simple improvement tips (no engine).
+          </div>
+
+          <div style="max-width:520px;margin-top:14px">
+            <label class="muted" style="font-weight:900;font-size:12px;display:block;margin-bottom:8px">
+              Chess.com username
+            </label>
+            <input id="ccUser" placeholder="example: hikaru" />
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn primary" id="btnAnalyzeCC">Analyze games</button>
+              <button class="btn" id="btnClearCC">Clear</button>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="notice" id="ccStatus">Waiting for username.</div>
+
+          <div class="hr"></div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+            <div>
+              <h3>Recent games</h3>
+              <div class="notice" id="ccGames" style="margin-top:10px">No games loaded.</div>
+            </div>
+
+            <div>
+              <h3>Instant tips</h3>
+              <div class="notice good" id="ccTips" style="margin-top:10px">
+                Enter a username and click “Analyze games” (or press Enter).
+              </div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="notice warn">
+            If your games are private, Chess.com’s public API won’t return them.
           </div>
         </div>
 
@@ -612,41 +628,32 @@
       showView("dashboard");
       render();
     }
+
     function showLanding(){
       $("#landing").style.display = "";
       $("#app").style.display = "none";
       $("#modePill").textContent = "Landing";
       render();
     }
-   function showView(name){
-  $$(".view").forEach(v => v.style.display = "none");
-  const target = document.querySelector(`#view-${name}`);
-  if(target) target.style.display = "";
 
-  $$(".menu .btn[data-view]").forEach(b => b.style.background = "");
-  const btn = document.querySelector(`.menu .btn[data-view="${name}"]`);
-  if(btn) btn.style.background = "rgba(255,255,255,.10)";
+    function showView(name){
+      $$(".view").forEach(v => v.style.display = "none");
+      const target = document.querySelector(`#view-${name}`);
+      if(target) target.style.display = "";
 
-  if(name === "notes") wireChesscomUI();
-}
-
-function openChesscomAnalysis(){
-  showApp();
-  showView("notes");
-
-  setTimeout(() => {
-    const analysis = document.getElementById("analysis");
-    if(analysis){
-      analysis.scrollIntoView({ behavior: "smooth", block: "start" });
+      $$(".menu .btn[data-view]").forEach(b => b.style.background = "");
+      const btn = document.querySelector(`.menu .btn[data-view="${name}"]`);
+      if(btn) btn.style.background = "rgba(255,255,255,.10)";
     }
 
-    const input = document.getElementById("chesscomUser");
-    if(input){
-      input.focus();
-      input.scrollIntoView({ behavior: "smooth", block: "center" });
+    function openChesscomPage(){
+      $("#landing").style.display = "none";
+      $("#app").style.display = "grid";
+      $("#modePill").textContent = "Chess.com Analysis";
+      showView("analysis");
+      setTimeout(() => document.getElementById("ccUser")?.focus(), 60);
     }
-  }, 80);
-}
+
     // ----------------------------
     // Streak logic
     // ----------------------------
@@ -661,10 +668,7 @@ function openChesscomAnalysis(){
         state.streak = 1;
       }
       state.lastDone = today;
-
-      // reset checklist for a fresh day (optional)
       state.checklist = { puzzle:false, pattern:false, habit:false };
-
       saveState();
       alert("Saved. Nice—come back tomorrow and keep it simple.");
     }
@@ -680,15 +684,18 @@ function openChesscomAnalysis(){
       $("#kpiStreak").textContent = String(streak);
       $("#kpiLast").textContent = state.lastDone ? state.lastDone : "—";
 
-      // notes
-      $("#notes").value = state.notes || "";
+      const notesEl = $("#notes");
+      if(notesEl) notesEl.value = state.notes || "";
 
-      // checklist
       $("#chkPuzzle").checked = !!state.checklist.puzzle;
       $("#chkPattern").checked = !!state.checklist.pattern;
       $("#chkHabit").checked = !!state.checklist.habit;
 
-      const completed = (state.checklist.puzzle?1:0) + (state.checklist.pattern?1:0) + (state.checklist.habit?1:0);
+      const completed =
+        (state.checklist.puzzle?1:0) +
+        (state.checklist.pattern?1:0) +
+        (state.checklist.habit?1:0);
+
       const tip = completed === 0
         ? "Start with the puzzle. Don’t guess fast—use Checks → Captures → Threats."
         : completed === 1
@@ -696,13 +703,14 @@ function openChesscomAnalysis(){
           : completed === 2
             ? "Last step: apply the habit in a game—ask what your opponent is threatening."
             : "All done. Keep it short and come back tomorrow.";
+
       $("#todayTip").textContent = tip;
     }
 
     // ----------------------------
-    // Chess.com: load recent games (public API)
+    // Chess.com analysis (public API)
     // ----------------------------
-    const CHESSCOM_USER_KEY = "cc_username";
+    const CHESSCOM_USER_KEY = "cc_username_v2";
 
     async function fetchJson(url){
       const res = await fetch(url);
@@ -711,14 +719,14 @@ function openChesscomAnalysis(){
     }
 
     function setCCStatus(msg, kind=""){
-      const el = $("#chesscomStatus");
+      const el = document.getElementById("ccStatus");
       if(!el) return;
       el.className = "notice " + (kind ? kind : "");
       el.textContent = msg;
     }
 
-    function renderGames(games){
-      const box = $("#chesscomGames");
+    function renderCCGames(games){
+      const box = document.getElementById("ccGames");
       if(!box) return;
 
       if(!games?.length){
@@ -740,7 +748,69 @@ function openChesscomAnalysis(){
       }).join("");
     }
 
-    async function loadChesscomGames(username){
+    function setCCTipsHtml(html, kind="good"){
+      const el = document.getElementById("ccTips");
+      if(!el) return;
+      el.className = "notice " + kind;
+      el.innerHTML = html;
+    }
+
+    function generateTipsFromGames(games, username){
+      if(!games?.length){
+        setCCTipsHtml("No games found to analyze.", "warn");
+        return;
+      }
+
+      const last = games.slice(0,8);
+      let shortGames = 0;
+      let gotMated = 0;
+      let stalemate = 0;
+      let resigned = 0;
+
+      for(const g of last){
+        const plyCount = g?.pgn ? (g.pgn.match(/\d+\./g) || []).length : 0;
+        if(plyCount && plyCount <= 20) shortGames++;
+
+        const w = (g.white?.result || "").toLowerCase();
+        const b = (g.black?.result || "").toLowerCase();
+        const both = `${w} ${b}`;
+
+        if(both.includes("checkmated")) gotMated++;
+        if(both.includes("stalemate")) stalemate++;
+        if(both.includes("resigned")) resigned++;
+      }
+
+      const bullets = [];
+      bullets.push(`<b>${username}</b>: analyzed <b>${last.length}</b> recent games (latest month).`);
+      bullets.push(`<b>Rule #1:</b> every move = <b>Checks → Captures → Threats</b>, then “is anything hanging?”`);
+
+      if(shortGames >= 2){
+        bullets.push(`<b>Quick games:</b> Several ended fast. For your next 3 games: pause 3 seconds before every move and scan threats.`);
+      } else {
+        bullets.push(`<b>Consistency:</b> Great—keep the same thinking routine even when you’re winning.`);
+      }
+
+      if(gotMated >= 1){
+        bullets.push(`<b>King safety:</b> You got checkmated recently. Prioritize: castle early, and don’t open lines near your king.`);
+      }
+
+      if(stalemate >= 1){
+        bullets.push(`<b>Endgame:</b> A recent draw was stalemate. When up material: trade pieces, keep pawns, and don’t give the king “no moves”.`);
+      }
+
+      if(resigned >= 1){
+        bullets.push(`<b>Resign smarter:</b> Before resigning, check: (1) any checks, (2) any captures, (3) any forced trades.`);
+      }
+
+      bullets.push(`<b>10-minute plan:</b> play 1 game → write 1 sentence: “I missed ___ because I didn’t check ___.”`);
+
+      setCCTipsHtml(
+        `<ul style="margin:0 0 0 18px">${bullets.map(t => `<li style="margin:6px 0">${t}</li>`).join("")}</ul>`,
+        "good"
+      );
+    }
+
+    async function analyzeChesscom(username){
       username = (username || "").trim();
       if(!username) throw new Error("Enter a Chess.com username.");
 
@@ -754,53 +824,67 @@ function openChesscomAnalysis(){
       setCCStatus("Loading games…", "warn");
       const month = await fetchJson(latestArchiveUrl);
 
-      const games = month.games || [];
+      const games = (month.games || []);
       games.sort((a,b) => (b.end_time || 0) - (a.end_time || 0));
-
-      setCCStatus(`Connected: ${username}. Loaded ${games.length} games from latest month.`, "good");
-      renderGames(games);
 
       localStorage.setItem(CHESSCOM_USER_KEY, username);
 
-      // Optional: auto-add a note header
-      const notesEl = $("#notes");
-      if(notesEl && !notesEl.value.trim()){
-        notesEl.value = `Chess.com: ${username}\n\nPatterns to fix:\n- `;
-      }
+      setCCStatus(`Loaded ${games.length} games from latest month for ${username}.`, "good");
+      renderCCGames(games);
+      generateTipsFromGames(games, username);
     }
 
-    function disconnectChesscom(){
+    function clearChesscom(){
       localStorage.removeItem(CHESSCOM_USER_KEY);
-      setCCStatus("Disconnected.");
-      const box = $("#chesscomGames");
-      if(box) box.textContent = "No games loaded.";
+
+      document.getElementById("ccUser").value = "";
+      setCCStatus("Waiting for username.", "warn");
+
+      const g = document.getElementById("ccGames");
+      if(g) g.textContent = "No games loaded.";
+
+      setCCTipsHtml("Enter a username and click “Analyze games” (or press Enter).", "good");
     }
 
     function wireChesscomUI(){
-      const btnLoad = $("#btnLoadChesscom");
-      const btnClear = $("#btnClearChesscom");
-      const input = $("#chesscomUser");
+      const input = document.getElementById("ccUser");
+      const btnAnalyze = document.getElementById("btnAnalyzeCC");
+      const btnClear = document.getElementById("btnClearCC");
 
-      if(btnLoad && !btnLoad.dataset.wired){
-        btnLoad.dataset.wired = "1";
-        btnLoad.onclick = async () => {
+      // analyze click
+      if(btnAnalyze && !btnAnalyze.dataset.wired){
+        btnAnalyze.dataset.wired = "1";
+        btnAnalyze.onclick = async () => {
           try{
-            await loadChesscomGames(input?.value || "");
+            await analyzeChesscom(input.value);
           } catch(e){
             setCCStatus(e.message || String(e), "bad");
           }
         };
       }
 
+      // clear click
       if(btnClear && !btnClear.dataset.wired){
         btnClear.dataset.wired = "1";
-        btnClear.onclick = disconnectChesscom;
+        btnClear.onclick = clearChesscom;
       }
 
+      // press Enter to analyze
+      if(input && !input.dataset.wired){
+        input.dataset.wired = "1";
+        input.addEventListener("keydown", (e) => {
+          if(e.key === "Enter"){
+            e.preventDefault();
+            btnAnalyze?.click();
+          }
+        });
+      }
+
+      // restore saved username
       const saved = localStorage.getItem(CHESSCOM_USER_KEY);
       if(saved && input && !input.value){
         input.value = saved;
-        setCCStatus(`Saved username: ${saved}. Click “Load recent games”.`, "warn");
+        setCCStatus(`Saved username: ${saved}. Click “Analyze games” or press Enter.`, "warn");
       }
     }
 
@@ -837,7 +921,6 @@ function openChesscomAnalysis(){
       }
     };
 
-    // Export / Import
     $("#btnExport").onclick = () => {
       const data = JSON.stringify(state, null, 2);
       const blob = new Blob([data], { type: "application/json" });
@@ -873,6 +956,3 @@ function openChesscomAnalysis(){
   </script>
 </body>
 </html>
-
-
-
