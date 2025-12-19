@@ -93,6 +93,10 @@
       box-shadow:var(--shadow);
       overflow:hidden;
     }
+    .clickable{cursor:pointer}
+.clickable:hover{transform:translateY(-1px)}
+.clickable:focus{outline:2px solid rgba(55,212,255,.35); outline-offset:3px}
+
     .pad{padding:20px}
     h1{margin:10px 0 8px;font-size:44px;line-height:1.05}
     h2{margin:0;font-size:22px}
@@ -263,25 +267,48 @@
             Scan <b>Checks → Captures → Threats</b>. Then ask: <b>is any piece hanging?</b>
           </div>
         </div>
+<div class="card pad clickable" data-nav="#daily" role="button" tabindex="0" aria-label="Open daily plan">
+  <div class="sectionTitle">
+    <div>
+      <h2>What you do today</h2>
+      <p>10 minutes. That’s enough. (Click to open your daily plan)</p>
+    </div>
+    <span class="tag" id="landingStreak">streak: 0</span>
+  </div>
+  <div class="hr"></div>
 
-        <div class="card pad">
-          <div class="sectionTitle">
-            <div>
-              <h2>What you do today</h2>
-              <p>10 minutes. That’s enough.</p>
-            </div>
-            <span class="tag" id="landingStreak">streak: 0</span>
-          </div>
-          <div class="hr"></div>
+  <div class="checklist">
+    <div class="check">
+      <input type="checkbox" disabled checked />
+      <div>
+        <b>1) Puzzle (3–6 min)</b>
+        <div class="muted">Use C→C→T: checks, captures, threats.</div>
+      </div>
+    </div>
 
-          <div class="checklist">
-            <div class="check">
-              <input type="checkbox" disabled checked />
-              <div>
-                <b>1) Puzzle (3–6 min)</b>
-                <div class="muted">Use C→C→T: checks, captures, threats.</div>
-              </div>
-            </div>
+    <div class="check">
+      <input type="checkbox" disabled checked />
+      <div>
+        <b>2) Learn one pattern (2 min)</b>
+        <div class="muted">Fork / pin / back rank / hanging piece.</div>
+      </div>
+    </div>
+
+    <div class="check">
+      <input type="checkbox" disabled checked />
+      <div>
+        <b>3) Apply the habit (3 min)</b>
+        <div class="muted">Before every move: “What is my opponent threatening?”</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hr"></div>
+  <div class="notice warn">
+    Click this card to open your Daily Plan (with timer + auto focus).
+  </div>
+</div>
+
 
             <div class="check">
               <input type="checkbox" disabled checked />
@@ -718,6 +745,7 @@
     const routes = {
       "#landing": "landing",
       "#training": "training",
+      "#daily": "daily",
       "#puzzle": "puzzle",
       "#path": "path",
       "#notes": "notes",
@@ -728,6 +756,7 @@
       const map = {
         landing: "Landing",
         training: "Training Hub",
+        daily: "Daily Plan",
         puzzle: "Puzzle",
         path: "Study Path",
         notes: "Notes",
@@ -752,7 +781,10 @@
       if(routeName === "notes"){
         setTimeout(() => $("#notes")?.focus(), 60);
       }
-    }
+      if(routeName === "daily"){
+  renderDailyPlan();
+  wireDailyUI();
+}
 
     function navigate(hash){
       if(!routes[hash]) hash = "#landing";
@@ -766,12 +798,13 @@
     }
 
     function wireNavButtons(){
-      document.addEventListener("click", (e) => {
-        const btn = e.target.closest("[data-nav]");
-        if(!btn) return;
-        const hash = btn.getAttribute("data-nav");
-        if(hash) navigate(hash);
-      });
+document.addEventListener("keydown", (e) => {
+  if(e.key !== "Enter") return;
+  const el = document.activeElement;
+  if(!el) return;
+  const nav = el.getAttribute && el.getAttribute("data-nav");
+  if(nav) navigate(nav);
+});
     }
 
     // ============================
@@ -1171,6 +1204,342 @@
         setCCStatus(`Saved username: ${saved}. Click “Analyze games” or press Enter.`, "warn");
       }
     }
+    // ============================
+// Daily Plan (local, no accounts)
+// ============================
+const DAILY_KEY = "climbchess_daily_plan_v1";
+
+function loadDaily(){
+  try{
+    const raw = localStorage.getItem(DAILY_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveDaily(d){
+  localStorage.setItem(DAILY_KEY, JSON.stringify(d));
+}
+
+function daySeedNumber(){
+  // stable number per day (local time)
+  const iso = todayISO(); // YYYY-MM-DD
+  let n = 0;
+  for(let i=0;i<iso.length;i++) n += iso.charCodeAt(i) * (i+1);
+  return n;
+}
+
+function todayFocus(){
+  const focuses = [
+    {
+      title: "Stop hanging pieces",
+      why: "Most beginner losses come from simple one-move blunders.",
+      steps: [
+        { t:"Puzzle (3–6 min)", d:"Do 1 puzzle slowly. Say C→C→T out loud.", mins: 5 },
+        { t:"Pattern (2 min)", d:"Identify the pattern: fork / pin / hanging piece / mate.", mins: 2 },
+        { t:"Habit game (3–5 min)", d:"In a game: before every move ask “What is my opponent threatening?”", mins: 4 },
+      ]
+    },
+    {
+      title: "Forks win material",
+      why: "Forks are the fastest way to swing games as a beginner.",
+      steps: [
+        { t:"Puzzle (3–6 min)", d:"Look for knight forks first. Don’t move instantly.", mins: 5 },
+        { t:"Pattern (2 min)", d:"Find 1 fork idea in your head: “two targets, one move.”", mins: 2 },
+        { t:"Habit game (3–5 min)", d:"After opponent moves: check if they gave you a fork or you can fork them.", mins: 4 },
+      ]
+    },
+    {
+      title: "Pins create free wins",
+      why: "Pinned pieces can’t move — you win material by attacking the pinned piece.",
+      steps: [
+        { t:"Puzzle (3–6 min)", d:"Ask: “Is something pinned to the king or queen?”", mins: 5 },
+        { t:"Pattern (2 min)", d:"Name the pin: absolute (king) vs relative (queen/rook).", mins: 2 },
+        { t:"Habit game (3–5 min)", d:"Try to line bishop/rook/queen on a piece + valuable piece behind it.", mins: 4 },
+      ]
+    },
+    {
+      title: "King safety first",
+      why: "A safe king prevents cheap mates and panic blunders.",
+      steps: [
+        { t:"Puzzle (3–6 min)", d:"Look for checks that lead to mate or win the queen.", mins: 5 },
+        { t:"Pattern (2 min)", d:"Back rank + exposed king are the big beginner killers.", mins: 2 },
+        { t:"Habit game (3–5 min)", d:"Castle early and avoid pushing pawns in front of your castled king.", mins: 4 },
+      ]
+    },
+  ];
+
+  const idx = daySeedNumber() % focuses.length;
+  return focuses[idx];
+}
+
+let dailyTimer = {
+  running: false,
+  endAt: 0,
+  intervalId: null,
+  currentStep: 1
+};
+
+function setDailyTimerText(msg, kind="good"){
+  const box = document.getElementById("dailyTimerBox");
+  if(!box) return;
+  box.className = "notice " + kind;
+  box.textContent = msg;
+}
+
+function startCountdown(minutes){
+  const ms = minutes * 60 * 1000;
+  dailyTimer.running = true;
+  dailyTimer.endAt = Date.now() + ms;
+
+  if(dailyTimer.intervalId) clearInterval(dailyTimer.intervalId);
+
+  dailyTimer.intervalId = setInterval(() => {
+    const left = dailyTimer.endAt - Date.now();
+    if(left <= 0){
+      clearInterval(dailyTimer.intervalId);
+      dailyTimer.intervalId = null;
+      dailyTimer.running = false;
+      setDailyTimerText("Time! Click “Next step”.", "warn");
+      return;
+    }
+    const totalSeconds = Math.ceil(left / 1000);
+    const m = Math.floor(totalSeconds / 60);
+    const s = String(totalSeconds % 60).padStart(2,"0");
+    setDailyTimerText(`Time left: ${m}:${s}`, "good");
+  }, 250);
+}
+
+function renderDailyPlan(){
+  const focus = todayFocus();
+  const focusBox = document.getElementById("dailyFocusBox");
+  if(focusBox){
+    focusBox.innerHTML = `<b>Today’s focus:</b> ${focus.title}<br/><span class="muted">${focus.why}</span>`;
+  }
+
+  // set steps text
+  const s1 = focus.steps[0];
+  const s2 = focus.steps[1];
+  const s3 = focus.steps[2];
+
+  const s1t = document.getElementById("dailyStep1Title");
+  const s1d = document.getElementById("dailyStep1Desc");
+  const s2t = document.getElementById("dailyStep2Title");
+  const s2d = document.getElementById("dailyStep2Desc");
+  const s3t = document.getElementById("dailyStep3Title");
+  const s3d = document.getElementById("dailyStep3Desc");
+
+  if(s1t) s1t.textContent = s1.t;
+  if(s1d) s1d.textContent = s1.d;
+  if(s2t) s2t.textContent = s2.t;
+  if(s2d) s2d.textContent = s2.d;
+  if(s3t) s3t.textContent = s3.t;
+  if(s3d) s3d.textContent = s3.d;
+
+  // load today’s saved progress
+  const daily = loadDaily();
+  const today = todayISO();
+  const saved = daily[today] || { step1:false, step2:false, step3:false, currentStep: 1 };
+
+  const c1 = document.getElementById("dailyStep1");
+  const c2 = document.getElementById("dailyStep2");
+  const c3 = document.getElementById("dailyStep3");
+
+  if(c1) c1.checked = !!saved.step1;
+  if(c2) c2.checked = !!saved.step2;
+  if(c3) c3.checked = !!saved.step3;
+
+  dailyTimer.currentStep = saved.currentStep || 1;
+
+  // timer prompt
+  setDailyTimerText("Ready when you are. Click “Start session”.", "good");
+}
+
+function saveDailyProgress(partial){
+  const daily = loadDaily();
+  const today = todayISO();
+  daily[today] = { ...(daily[today] || {}), ...partial };
+  saveDaily(daily);
+}
+
+function wireDailyUI(){
+  const btnStart = document.getElementById("btnDailyStart");
+  const btnNext = document.getElementById("btnDailyNext");
+  const btnReset = document.getElementById("btnDailyReset");
+
+  const c1 = document.getElementById("dailyStep1");
+  const c2 = document.getElementById("dailyStep2");
+  const c3 = document.getElementById("dailyStep3");
+
+  const focus = todayFocus();
+
+  if(c1 && !c1.dataset.wired){
+    c1.dataset.wired = "1";
+    c1.addEventListener("change", () => saveDailyProgress({ step1: c1.checked }));
+  }
+  if(c2 && !c2.dataset.wired){
+    c2.dataset.wired = "1";
+    c2.addEventListener("change", () => saveDailyProgress({ step2: c2.checked }));
+  }
+  if(c3 && !c3.dataset.wired){
+    c3.dataset.wired = "1";
+    c3.addEventListener("change", () => saveDailyProgress({ step3: c3.checked }));
+  }
+
+  if(btnStart && !btnStart.dataset.wired){
+    btnStart.dataset.wired = "1";
+    btnStart.addEventListener("click", () => {
+      const step = dailyTimer.currentStep || 1;
+      const minutes = focus.steps[Math.max(0, step-1)]?.mins || 5;
+      startCountdown(minutes);
+    });
+  }
+
+  if(btnNext && !btnNext.dataset.wired){
+    btnNext.dataset.wired = "1";
+    btnNext.addEventListener("click", () => {
+      const step = dailyTimer.currentStep || 1;
+
+      // mark current step complete
+      if(step === 1 && c1){ c1.checked = true; saveDailyProgress({ step1:true }); }
+      if(step === 2 && c2){ c2.checked = true; saveDailyProgress({ step2:true }); }
+      if(step === 3 && c3){ c3.checked = true; saveDailyProgress({ step3:true }); }
+
+      // advance step
+      const next = Math.min(3, step + 1);
+      dailyTimer.currentStep = next;
+      saveDailyProgress({ currentStep: next });
+
+      // stop timer if running
+      if(dailyTimer.intervalId){
+        clearInterval(dailyTimer.intervalId);
+        dailyTimer.intervalId = null;
+      }
+      dailyTimer.running = false;
+
+      if(next === 2) setDailyTimerText("Step 2 ready. Click “Start session” for the 2-minute timer.", "good");
+      else if(next === 3) setDailyTimerText("Step 3 ready. Click “Start session” for the game timer.", "good");
+      else setDailyTimerText("All steps done. Come back tomorrow.", "warn");
+    });
+  }
+
+  if(btnReset && !btnReset.dataset.wired){
+    btnReset.dataset.wired = "1";
+    btnReset.addEventListener("click", () => {
+      const daily = loadDaily();
+      const today = todayISO();
+      daily[today] = { step1:false, step2:false, step3:false, currentStep: 1 };
+      saveDaily(daily);
+
+      dailyTimer.currentStep = 1;
+      if(c1) c1.checked = false;
+      if(c2) c2.checked = false;
+      if(c3) c3.checked = false;
+
+      if(dailyTimer.intervalId){
+        clearInterval(dailyTimer.intervalId);
+        dailyTimer.intervalId = null;
+      }
+      dailyTimer.running = false;
+
+      setDailyTimerText("Reset done. Click “Start session”.", "good");
+    });
+  }
+}
+<!-- =========================
+     PAGE: DAILY PLAN
+========================== -->
+<section class="page" id="page-daily">
+  <div class="card pad">
+    <div class="sectionTitle">
+      <div>
+        <h2>Daily Plan</h2>
+        <p id="dailySubtitle" class="muted">10 minutes. One focus. No memorization.</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" data-nav="#landing">← Back</button>
+        <button class="btn" data-nav="#training">Training Hub</button>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="notice" id="dailyFocusBox">
+      Loading today’s focus…
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="row2">
+      <div>
+        <h3>Steps</h3>
+
+        <div class="checklist" style="margin-top:10px">
+          <div class="check">
+            <input id="dailyStep1" type="checkbox" />
+            <div>
+              <b id="dailyStep1Title">Puzzle</b>
+              <div class="muted" id="dailyStep1Desc">3–6 minutes</div>
+            </div>
+          </div>
+
+          <div class="check">
+            <input id="dailyStep2" type="checkbox" />
+            <div>
+              <b id="dailyStep2Title">Pattern</b>
+              <div class="muted" id="dailyStep2Desc">2 minutes</div>
+            </div>
+          </div>
+
+          <div class="check">
+            <input id="dailyStep3" type="checkbox" />
+            <div>
+              <b id="dailyStep3Title">Habit</b>
+              <div class="muted" id="dailyStep3Desc">3 minutes</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn primary" id="btnDailyStart">Start session</button>
+          <button class="btn" id="btnDailyNext">Next step</button>
+          <button class="btn" id="btnDailyReset">Reset today</button>
+        </div>
+
+        <div class="muted" style="font-size:12px;margin-top:10px;line-height:1.5">
+          This saves “today’s progress” locally in your browser.
+        </div>
+      </div>
+
+      <div>
+        <h3>Timer</h3>
+        <div class="notice good" id="dailyTimerBox" style="margin-top:10px">
+          Ready when you are.
+        </div>
+
+        <div class="hr"></div>
+
+        <h3>One sentence reflection</h3>
+        <div class="notice" style="margin-top:10px">
+          After your game, write one line:<br/>
+          <span class="mono">“I missed a ___ because I didn’t check ___.”</span>
+        </div>
+
+        <div class="hr"></div>
+
+        <h3>Quick links</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+          <button class="btn" data-nav="#puzzle">Open puzzle page</button>
+          <button class="btn" data-nav="#analysis">Chess.com analysis</button>
+          <a class="btn" href="https://lichess.org/training" target="_blank" rel="noopener">Lichess training</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
     // ============================
     // Events
@@ -1248,3 +1617,4 @@
   </script>
 </body>
 </html>
+
