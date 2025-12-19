@@ -918,4 +918,29 @@
     }
   });
 </script>
+<div class="card pad" style="margin-top:14px">
+  <h2>Connect Chess.com</h2>
+  <p class="muted" style="margin-top:6px">
+    Enter your Chess.com username to load your recent games (public data).
+  </p>
+
+  <div class="row" style="margin-top:10px">
+    <div>
+      <label>Chess.com username</label>
+      <input id="chesscomUser" placeholder="example: hikaru" />
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn primary" id="btnLoadChesscom">Load recent games</button>
+        <button class="btn" id="btnClearChesscom">Disconnect</button>
+      </div>
+      <div class="hr"></div>
+      <div class="notice" id="chesscomStatus">Not connected.</div>
+    </div>
+
+    <div>
+      <b>Recent games</b>
+      <div class="notice" id="chesscomGames" style="margin-top:10px">No games loaded.</div>
+    </div>
+  </div>
+</div>
+
 
