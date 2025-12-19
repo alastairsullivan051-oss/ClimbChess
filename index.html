@@ -44,9 +44,7 @@
       background: linear-gradient(180deg, rgba(11,15,23,.95), rgba(11,15,23,.72), transparent);
       backdrop-filter: blur(10px);
     }
-    .brand{
-      display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.2px
-    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.2px}
     .logo{
       width:34px;height:34px;border-radius:12px;
       background: conic-gradient(from 210deg, var(--brand), var(--brand2), var(--brand));
@@ -88,10 +86,6 @@
       border:1px solid var(--stroke);
       padding:6px 8px;border-radius:10px;display:inline-block;
     }
-    .hero{
-      display:grid;grid-template-columns:1.15fr .85fr;gap:16px;
-      padding:14px 0 8px;
-    }
     .card{
       border:1px solid var(--stroke);
       background: linear-gradient(180deg, rgba(18,26,42,.95), rgba(15,22,38,.92));
@@ -104,13 +98,6 @@
     h2{margin:0;font-size:22px}
     h3{margin:0;font-size:16px}
     .sub{color:var(--muted);font-size:16px;line-height:1.55;max-width:62ch}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-    .feat{
-      padding:14px;border-radius:16px;
-      border:1px solid var(--stroke);
-      background:rgba(255,255,255,.04);
-    }
-    .feat b{display:block;margin-bottom:6px}
     .muted{color:var(--muted)}
     .hr{height:1px;background:var(--stroke);margin:14px 0}
     .notice{
@@ -122,35 +109,39 @@
     .notice.good{background:rgba(54,211,153,.08)}
     .notice.warn{background:rgba(251,191,36,.08)}
     .notice.bad{background:rgba(251,113,133,.08)}
-    .app{
-      display:none;
-      margin-top:18px;
-      grid-template-columns:330px 1fr;
-      gap:16px;
-      align-items:start;
+    .mono{font-family:var(--mono)}
+
+    /* Pages */
+    .page{display:none;margin-top:14px}
+    .page.active{display:block}
+
+    /* Landing hero */
+    .hero{
+      display:grid;grid-template-columns:1.15fr .85fr;gap:16px;
+      padding:14px 0 8px;
     }
-    .sidebar{position:sticky;top:76px}
-    .sideTop{display:flex;justify-content:space-between;align-items:center;gap:10px}
-    .menu{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-    .menu .btn{justify-content:flex-start;width:100%}
-    .content{display:grid;gap:16px}
-    .sectionTitle{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
-    .sectionTitle p{margin:0;color:var(--muted);font-size:13px}
-    .kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-    .kpi{
-      display:flex;flex-direction:column;gap:6px;
-      padding:14px;border-radius:16px;border:1px solid var(--stroke);background:rgba(255,255,255,.04)
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+    .feat{
+      padding:14px;border-radius:16px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
     }
-    .kpi .big{font-size:26px;font-weight:950}
-    .kpi small{color:var(--muted)}
+    .feat b{display:block;margin-bottom:6px}
     .checklist{display:grid;gap:10px;margin-top:10px}
     .check{
       display:flex;gap:10px;align-items:flex-start;
       padding:12px;border-radius:14px;border:1px solid var(--stroke);background:rgba(255,255,255,.03)
     }
     .check input{margin-top:2px;transform:scale(1.1)}
-    .mono{font-family:var(--mono)}
-    .views > .view{display:none}
+    .sectionTitle{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+    .sectionTitle p{margin:0;color:var(--muted);font-size:13px}
+
+    /* Training layout (each is still its own page) */
+    .twoCol{display:grid;grid-template-columns:330px 1fr;gap:16px;align-items:start}
+    .sidebar{position:sticky;top:76px}
+    .menu{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .menu .btn{justify-content:flex-start;width:100%}
+    .content{display:grid;gap:16px}
 
     iframe.puzzle{
       width:100%;
@@ -168,17 +159,30 @@
       padding:12px;border-radius:14px;outline:none;
     }
     textarea{resize:vertical}
+
+    .kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    .kpi{
+      display:flex;flex-direction:column;gap:6px;
+      padding:14px;border-radius:16px;border:1px solid var(--stroke);background:rgba(255,255,255,.04)
+    }
+    .kpi .big{font-size:26px;font-weight:950}
+    .kpi small{color:var(--muted)}
+
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+
     .footer{
       margin-top:24px;
       padding:20px 0;
       color:rgba(255,255,255,.55);
       font-size:12px;
     }
+
     @media (max-width: 980px){
       .hero{grid-template-columns:1fr}
-      .app{grid-template-columns:1fr}
+      .twoCol{grid-template-columns:1fr}
       .sidebar{position:relative;top:auto}
       iframe.puzzle{height:520px}
+      .row2{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -196,13 +200,15 @@
 
       <div class="btnrow">
         <span class="pill" id="modePill">Landing</span>
-        <button class="btn ghost" id="btnOpenApp">Open Training Hub</button>
-        <button class="btn primary" id="btnStart">Start</button>
+        <button class="btn ghost" data-nav="#training">Open Training Hub</button>
+        <button class="btn primary" data-nav="#training">Start</button>
       </div>
     </div>
 
-    <!-- LANDING -->
-    <section id="landing">
+    <!-- =========================
+         PAGE: LANDING
+    ========================== -->
+    <section class="page" id="page-landing">
       <div class="hero">
         <div class="card pad">
           <span class="tag">Single-file website • beginner-safe • no backend</span>
@@ -223,9 +229,7 @@
           </div>
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-          <button class="btn primary" onclick="openChesscomPage()">
-            Analyze my Chess.com games
-          </button>
+            <button class="btn primary" data-nav="#analysis">Analyze my Chess.com games</button>
             <a class="btn" href="https://www.chess.com" target="_blank" rel="noopener">Chess.com</a>
           </div>
 
@@ -249,7 +253,7 @@
           </div>
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
-            <button class="btn primary" id="btnStart2">Start Training</button>
+            <button class="btn primary" data-nav="#training">Start Training</button>
             <button class="btn" id="btnReset">Reset Progress</button>
           </div>
 
@@ -304,323 +308,356 @@
       </div>
     </section>
 
-    <!-- APP -->
-    <section class="app" id="app">
-      <aside class="sidebar">
-        <div class="card pad">
-          <div class="sideTop">
-            <div>
-              <div style="font-weight:950;font-size:16px">Training Hub</div>
-              <div class="muted" style="font-size:12px">Beginner path + daily habit</div>
-            </div>
-            <span class="tag" id="streakTag">streak: 0</span>
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="menu">
-            <button class="btn" data-view="dashboard">📌 Today</button>
-            <button class="btn" data-view="puzzle">🧩 Daily Puzzle</button>
-            <button class="btn" data-view="path">🗺️ Beginner Path</button>
-            <button class="btn" data-view="notes">📝 Notes</button>
-            <button class="btn ghost" id="btnBack">← Back to Landing</button>
-          </div>
-        </div>
-      </aside>
-
-      <main class="content views">
-
-        <!-- TODAY -->
-       <div class="sectionTitle">
-         
-              <div class="card pad view" id="view-dashboard">
-              <h2>Today</h2>
-              <p>Keep it short. Keep it consistent.</p>
-            </div>
-            <button class="btn primary" id="btnMarkDone">Mark today complete</button>
-          </div>
-
-          <div class="kpis">
-            <div class="kpi">
-              <div class="muted">Current streak</div>
-              <div class="big" id="kpiStreak">0</div>
-              <small>Days in a row you completed a session.</small>
-            </div>
-            <div class="kpi">
-              <div class="muted">Last completion</div>
-              <div class="big" id="kpiLast">—</div>
-              <small class="muted">Local to this browser.</small>
-            </div>
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="notice">
-            <b>Today’s micro-habit:</b><br/>
-            Before every move, ask:<br/>
-            <span class="mono">
-              1) What is my opponent threatening?<br/>
-              2) Do I have checks/captures/threats?<br/>
-              3) Is any piece hanging?
-            </span>
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="checklist">
-            <label class="muted" style="font-weight:900">Daily checklist</label>
-
-            <div class="check">
-              <input id="chkPuzzle" type="checkbox" />
+    <!-- =========================
+         PAGE: TRAINING (DASHBOARD)
+    ========================== -->
+    <section class="page" id="page-training">
+      <div class="twoCol">
+        <aside class="sidebar">
+          <div class="card pad">
+            <div class="sectionTitle" style="align-items:center">
               <div>
-                <b>Do 1 puzzle</b>
-                <div class="muted">Slow down. 30–60 seconds before moving.</div>
+                <div style="font-weight:950;font-size:16px">Training Hub</div>
+                <div class="muted" style="font-size:12px">Each button opens its own page</div>
               </div>
+              <span class="tag" id="streakTag">streak: 0</span>
             </div>
+            <div class="hr"></div>
 
-            <div class="check">
-              <input id="chkPattern" type="checkbox" />
+            <div class="menu">
+              <button class="btn" data-nav="#training">📌 Today</button>
+              <button class="btn" data-nav="#puzzle">🧩 Daily Puzzle</button>
+              <button class="btn" data-nav="#path">🗺️ Beginner Path</button>
+              <button class="btn" data-nav="#notes">📝 Notes</button>
+              <button class="btn" data-nav="#analysis">♟️ Chess.com Analysis</button>
+              <button class="btn ghost" data-nav="#landing">← Back to Landing</button>
+            </div>
+          </div>
+        </aside>
+
+        <main class="content">
+          <div class="card pad">
+            <div class="sectionTitle">
               <div>
-                <b>Name the pattern</b>
-                <div class="muted">Fork, pin, skewer, mate, hanging piece.</div>
+                <h2>Today</h2>
+                <p>Keep it short. Keep it consistent.</p>
+              </div>
+              <button class="btn primary" id="btnMarkDone">Mark today complete</button>
+            </div>
+
+            <div class="kpis">
+              <div class="kpi">
+                <div class="muted">Current streak</div>
+                <div class="big" id="kpiStreak">0</div>
+                <small>Days in a row you completed a session.</small>
+              </div>
+              <div class="kpi">
+                <div class="muted">Last completion</div>
+                <div class="big" id="kpiLast">—</div>
+                <small class="muted">Local to this browser.</small>
               </div>
             </div>
 
-            <div class="check">
-              <input id="chkHabit" type="checkbox" />
-              <div>
-                <b>Use the habit in a game</b>
-                <div class="muted">Even one blitz game counts.</div>
-              </div>
+            <div class="hr"></div>
+
+            <div class="notice">
+              <b>Today’s micro-habit:</b><br/>
+              Before every move, ask:<br/>
+              <span class="mono">
+                1) What is my opponent threatening?<br/>
+                2) Do I have checks/captures/threats?<br/>
+                3) Is any piece hanging?
+              </span>
             </div>
-          </div>
 
-          <div class="hr"></div>
-          <div class="notice warn" id="todayTip"></div>
-        </div>
+            <div class="hr"></div>
 
-        <!-- PUZZLE -->
-        <div class="card pad view" id="view-puzzle">
-          <div class="sectionTitle">
-            <div>
-              <h2>Daily Puzzle</h2>
-              <p>Real puzzle embed (no broken moves).</p>
-            </div>
-            <a class="btn" href="https://lichess.org/training" target="_blank" rel="noopener">Open on Lichess</a>
-          </div>
+            <div class="checklist">
+              <label class="muted" style="font-weight:900">Daily checklist</label>
 
-          <div class="hr"></div>
-
-          <div class="notice">
-            <b>How to solve (beginner method):</b><br/>
-            1) Checks • 2) Captures • 3) Threats • then pick the best.
-          </div>
-
-          <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;margin-top:12px">
-            <iframe class="puzzle"
-              src="https://lichess.org/training/frame?theme=auto&bg=auto"
-              title="Lichess Puzzle"
-              frameborder="0"></iframe>
-
-            <div style="flex:1;min-width:260px">
-              <div class="notice good">
-                <b>After you finish:</b><br/>
-                Write one sentence: “I missed a ___ because I didn’t check ___.”
+              <div class="check">
+                <input id="chkPuzzle" type="checkbox" />
+                <div>
+                  <b>Do 1 puzzle</b>
+                  <div class="muted">Slow down. 30–60 seconds before moving.</div>
+                </div>
               </div>
 
-              <div class="hr"></div>
+              <div class="check">
+                <input id="chkPattern" type="checkbox" />
+                <div>
+                  <b>Name the pattern</b>
+                  <div class="muted">Fork, pin, skewer, mate, hanging piece.</div>
+                </div>
+              </div>
 
-              <button class="btn primary" id="btnPuzzleDone">I did the puzzle</button>
-              <div class="muted" style="font-size:12px;margin-top:10px;line-height:1.5">
-                If the puzzle area ever appears blank, try a hard refresh (Ctrl+Shift+R) or open it on Lichess.
+              <div class="check">
+                <input id="chkHabit" type="checkbox" />
+                <div>
+                  <b>Use the habit in a game</b>
+                  <div class="muted">Even one blitz game counts.</div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <!-- PATH -->
-        <div class="card pad view" id="view-path">
-          <div class="sectionTitle">
-            <div>
-              <h2>Beginner Path</h2>
-              <p>What to study first (no memorization).</p>
+            <div class="hr"></div>
+            <div class="notice warn" id="todayTip"></div>
+
+            <div class="hr"></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn" data-nav="#puzzle">Go to Puzzle</button>
+              <button class="btn" data-nav="#analysis">Analyze Chess.com games</button>
             </div>
           </div>
-
-          <div class="hr"></div>
-
-          <div class="notice">
-            <b>Goal:</b> Stop hanging pieces, then learn the most common tactics.
-          </div>
-
-          <div class="grid2" style="margin-top:12px">
-            <div class="feat">
-              <b>Week 1 — Hanging pieces</b>
-              <div class="muted">Every move: “Is anything undefended?”</div>
-            </div>
-            <div class="feat">
-              <b>Week 2 — Forks</b>
-              <div class="muted">Knights + queen forks. Win material.</div>
-            </div>
-            <div class="feat">
-              <b>Week 3 — Pins</b>
-              <div class="muted">Pinned pieces can’t move. Exploit it.</div>
-            </div>
-            <div class="feat">
-              <b>Week 4 — Mate patterns</b>
-              <div class="muted">Back rank + ladder mate. Finish games.</div>
-            </div>
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="notice warn">
-            <b>Openings (beginner rule):</b> Don’t memorize lines. Learn 3 principles:
-            <ul style="margin:8px 0 0 18px;color:rgba(233,238,252,.9)">
-              <li>Develop pieces</li>
-              <li>Control the center</li>
-              <li>Castle early</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- NOTES (clean notes only) -->
-        <div class="card pad view" id="view-notes">
-          <div class="sectionTitle">
-            <div>
-              <h2>Notes</h2>
-              <p>Write what you keep missing.</p>
-            </div>
-            <button class="btn primary" id="btnSaveNotes">Save</button>
-          </div>
-<!-- CHESS.COM ANALYSIS (DEDICATED PAGE) -->
-<div class="card pad view" id="view-analysis">
-  <div class="sectionTitle">
-    <div>
-      <h2>Chess.com Game Analysis</h2>
-      <p>Enter your username to get instant beginner-friendly tips.</p>
-    </div>
-    <button class="btn" onclick="showLanding()">← Back</button>
-  </div>
-
-  <div class="hr"></div>
-
-  <div class="notice">
-    We analyze your <b>recent public Chess.com games</b> and generate simple improvement tips (no engine).
-  </div>
-
-  <div style="max-width:520px;margin-top:14px">
-    <label class="muted" style="font-weight:900;font-size:12px;display:block;margin-bottom:8px">
-      Chess.com username
-    </label>
-    <input id="ccUser" placeholder="example: hikaru" />
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-      <button class="btn primary" id="btnAnalyzeCC">Analyze games</button>
-      <button class="btn" id="btnClearCC">Clear</button>
-    </div>
-  </div>
-
-  <div class="hr"></div>
-
-  <div class="notice" id="ccStatus">Waiting for username.</div>
-
-  <div class="hr"></div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
-    <div>
-      <b>Recent games</b>
-      <div class="notice" id="ccGames" style="margin-top:10px">No games loaded.</div>
-    </div>
-
-    <div>
-      <b>Instant tips</b>
-      <div class="notice good" id="ccTips" style="margin-top:10px">
-        Enter a username and click “Analyze games” (or press Enter).
+        </main>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <div class="hr"></div>
-
-  <div class="notice warn">
-    If your games are private, Chess.com’s public API won’t return them.
-  </div>
-</div>
-          <div class="hr"></div>
-
-          <label class="muted" style="font-weight:900;font-size:12px;display:block;margin-bottom:8px">Patterns that beat me lately</label>
-          <textarea id="notes" style="min-height:180px"
-            placeholder="Example: I miss back rank mates. I forget to ask what my opponent is threatening."></textarea>
-
-          <div class="hr"></div>
-
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn" id="btnClearNotes">Clear</button>
-            <button class="btn" id="btnExport">Export data (JSON)</button>
-            <button class="btn" id="btnImport">Import data (JSON)</button>
-            <input id="importFile" type="file" accept="application/json" style="display:none" />
-          </div>
-
-          <div class="muted" style="font-size:12px;margin-top:10px;line-height:1.5">
-            This saves locally in your browser (no accounts yet).
-          </div>
-        </div>
-
-        <!-- CHESS.COM ANALYSIS (DEDICATED PAGE) -->
-        <div class="card pad view" id="view-analysis">
-          <div class="sectionTitle">
-            <div>
-              <h2>Chess.com Game Analysis</h2>
-              <p>Enter your username to get instant beginner-friendly tips.</p>
-            </div>
-            <button class="btn" onclick="showLanding()">← Back</button>
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="notice">
-            We analyze your <b>recent public Chess.com games</b> and generate simple improvement tips (no engine).
-          </div>
-
-          <div style="max-width:520px;margin-top:14px">
-            <label class="muted" style="font-weight:900;font-size:12px;display:block;margin-bottom:8px">
-              Chess.com username
-            </label>
-            <input id="ccUser" placeholder="example: hikaru" />
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-              <button class="btn primary" id="btnAnalyzeCC">Analyze games</button>
-              <button class="btn" id="btnClearCC">Clear</button>
+    <!-- =========================
+         PAGE: PUZZLE
+    ========================== -->
+    <section class="page" id="page-puzzle">
+      <div class="twoCol">
+        <aside class="sidebar">
+          <div class="card pad">
+            <div style="font-weight:950;font-size:16px">Training Hub</div>
+            <div class="muted" style="font-size:12px">Pages: Today / Puzzle / Path / Notes</div>
+            <div class="hr"></div>
+            <div class="menu">
+              <button class="btn" data-nav="#training">📌 Today</button>
+              <button class="btn" data-nav="#puzzle">🧩 Daily Puzzle</button>
+              <button class="btn" data-nav="#path">🗺️ Beginner Path</button>
+              <button class="btn" data-nav="#notes">📝 Notes</button>
+              <button class="btn" data-nav="#analysis">♟️ Chess.com Analysis</button>
+              <button class="btn ghost" data-nav="#landing">← Back to Landing</button>
             </div>
           </div>
+        </aside>
 
-          <div class="hr"></div>
-
-          <div class="notice" id="ccStatus">Waiting for username.</div>
-
-          <div class="hr"></div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
-            <div>
-              <h3>Recent games</h3>
-              <div class="notice" id="ccGames" style="margin-top:10px">No games loaded.</div>
+        <main class="content">
+          <div class="card pad">
+            <div class="sectionTitle">
+              <div>
+                <h2>Daily Puzzle</h2>
+                <p>Real puzzle embed (no broken moves).</p>
+              </div>
+              <a class="btn" href="https://lichess.org/training" target="_blank" rel="noopener">Open on Lichess</a>
             </div>
 
-            <div>
-              <h3>Instant tips</h3>
-              <div class="notice good" id="ccTips" style="margin-top:10px">
-                Enter a username and click “Analyze games” (or press Enter).
+            <div class="hr"></div>
+
+            <div class="notice">
+              <b>How to solve (beginner method):</b><br/>
+              1) Checks • 2) Captures • 3) Threats • then pick the best.
+            </div>
+
+            <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;margin-top:12px">
+              <iframe class="puzzle"
+                src="https://lichess.org/training/frame?theme=auto&bg=auto"
+                title="Lichess Puzzle"
+                frameborder="0"></iframe>
+
+              <div style="flex:1;min-width:260px">
+                <div class="notice good">
+                  <b>After you finish:</b><br/>
+                  Write one sentence: “I missed a ___ because I didn’t check ___.”
+                </div>
+
+                <div class="hr"></div>
+
+                <button class="btn primary" id="btnPuzzleDone">I did the puzzle</button>
+                <div class="muted" style="font-size:12px;margin-top:10px;line-height:1.5">
+                  If the puzzle area ever appears blank, try a hard refresh (Ctrl+Shift+R) or open it on Lichess.
+                </div>
               </div>
             </div>
           </div>
+        </main>
+      </div>
+    </section>
 
-          <div class="hr"></div>
+    <!-- =========================
+         PAGE: PATH
+    ========================== -->
+    <section class="page" id="page-path">
+      <div class="twoCol">
+        <aside class="sidebar">
+          <div class="card pad">
+            <div style="font-weight:950;font-size:16px">Training Hub</div>
+            <div class="muted" style="font-size:12px">Pages: Today / Puzzle / Path / Notes</div>
+            <div class="hr"></div>
+            <div class="menu">
+              <button class="btn" data-nav="#training">📌 Today</button>
+              <button class="btn" data-nav="#puzzle">🧩 Daily Puzzle</button>
+              <button class="btn" data-nav="#path">🗺️ Beginner Path</button>
+              <button class="btn" data-nav="#notes">📝 Notes</button>
+              <button class="btn" data-nav="#analysis">♟️ Chess.com Analysis</button>
+              <button class="btn ghost" data-nav="#landing">← Back to Landing</button>
+            </div>
+          </div>
+        </aside>
 
-          <div class="notice warn">
-            If your games are private, Chess.com’s public API won’t return them.
+        <main class="content">
+          <div class="card pad">
+            <div class="sectionTitle">
+              <div>
+                <h2>Beginner Path</h2>
+                <p>What to study first (no memorization).</p>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="notice">
+              <b>Goal:</b> Stop hanging pieces, then learn the most common tactics.
+            </div>
+
+            <div class="grid2" style="margin-top:12px">
+              <div class="feat">
+                <b>Week 1 — Hanging pieces</b>
+                <div class="muted">Every move: “Is anything undefended?”</div>
+              </div>
+              <div class="feat">
+                <b>Week 2 — Forks</b>
+                <div class="muted">Knights + queen forks. Win material.</div>
+              </div>
+              <div class="feat">
+                <b>Week 3 — Pins</b>
+                <div class="muted">Pinned pieces can’t move. Exploit it.</div>
+              </div>
+              <div class="feat">
+                <b>Week 4 — Mate patterns</b>
+                <div class="muted">Back rank + ladder mate. Finish games.</div>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="notice warn">
+              <b>Openings (beginner rule):</b> Don’t memorize lines. Learn 3 principles:
+              <ul style="margin:8px 0 0 18px;color:rgba(233,238,252,.9)">
+                <li>Develop pieces</li>
+                <li>Control the center</li>
+                <li>Castle early</li>
+              </ul>
+            </div>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <!-- =========================
+         PAGE: NOTES
+    ========================== -->
+    <section class="page" id="page-notes">
+      <div class="twoCol">
+        <aside class="sidebar">
+          <div class="card pad">
+            <div style="font-weight:950;font-size:16px">Training Hub</div>
+            <div class="muted" style="font-size:12px">Pages: Today / Puzzle / Path / Notes</div>
+            <div class="hr"></div>
+            <div class="menu">
+              <button class="btn" data-nav="#training">📌 Today</button>
+              <button class="btn" data-nav="#puzzle">🧩 Daily Puzzle</button>
+              <button class="btn" data-nav="#path">🗺️ Beginner Path</button>
+              <button class="btn" data-nav="#notes">📝 Notes</button>
+              <button class="btn" data-nav="#analysis">♟️ Chess.com Analysis</button>
+              <button class="btn ghost" data-nav="#landing">← Back to Landing</button>
+            </div>
+          </div>
+        </aside>
+
+        <main class="content">
+          <div class="card pad">
+            <div class="sectionTitle">
+              <div>
+                <h2>Notes</h2>
+                <p>Write what you keep missing.</p>
+              </div>
+              <button class="btn primary" id="btnSaveNotes">Save</button>
+            </div>
+
+            <div class="hr"></div>
+
+            <label class="muted" style="font-weight:900;font-size:12px;display:block;margin-bottom:8px">Patterns that beat me lately</label>
+            <textarea id="notes" style="min-height:180px"
+              placeholder="Example: I miss back rank mates. I forget to ask what my opponent is threatening."></textarea>
+
+            <div class="hr"></div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn" id="btnClearNotes">Clear</button>
+              <button class="btn" id="btnExport">Export data (JSON)</button>
+              <button class="btn" id="btnImport">Import data (JSON)</button>
+              <input id="importFile" type="file" accept="application/json" style="display:none" />
+            </div>
+
+            <div class="muted" style="font-size:12px;margin-top:10px;line-height:1.5">
+              This saves locally in your browser (no accounts yet).
+            </div>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <!-- =========================
+         PAGE: CHESS.COM ANALYSIS
+    ========================== -->
+    <section class="page" id="page-analysis">
+      <div class="card pad">
+        <div class="sectionTitle">
+          <div>
+            <h2>Chess.com Game Analysis</h2>
+            <p>Enter your username to get instant beginner-friendly tips.</p>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" data-nav="#landing">← Back</button>
+            <button class="btn" data-nav="#training">Training Hub</button>
           </div>
         </div>
 
-      </main>
+        <div class="hr"></div>
+
+        <div class="notice">
+          We analyze your <b>recent public Chess.com games</b> and generate simple improvement tips (no engine).
+        </div>
+
+        <div style="max-width:520px;margin-top:14px">
+          <label class="muted" style="font-weight:900;font-size:12px;display:block;margin-bottom:8px">
+            Chess.com username
+          </label>
+          <input id="ccUser" placeholder="example: hikaru" />
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+            <button class="btn primary" id="btnAnalyzeCC">Analyze games</button>
+            <button class="btn" id="btnClearCC">Clear</button>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="notice warn" id="ccStatus">Waiting for username.</div>
+
+        <div class="hr"></div>
+
+        <div class="row2">
+          <div>
+            <h3>Recent games</h3>
+            <div class="notice" id="ccGames" style="margin-top:10px">No games loaded.</div>
+          </div>
+          <div>
+            <h3>Instant tips</h3>
+            <div class="notice good" id="ccTips" style="margin-top:10px">
+              Enter a username and click “Analyze games” (or press Enter).
+            </div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="notice warn">
+          If your games are private, Chess.com’s public API won’t return them. Also: opening this as <span class="mono">file://</span> may block fetch in some browsers—use a local server (VS Code “Live Server”) if needed.
+        </div>
+      </div>
     </section>
 
     <div class="footer">
@@ -629,10 +666,12 @@
   </div>
 
   <script>
-    // ----------------------------
-    // Local state (no backend)
-    // ----------------------------
-    const STORE_KEY = "climbchess_beginner_v1";
+    // ============================
+    // Helpers + Local Storage
+    // ============================
+    const STORE_KEY = "climbchess_beginner_v2";
+    const CHESSCOM_USER_KEY = "cc_username_v2";
+
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
@@ -643,6 +682,8 @@
       notes: ""
     });
 
+    let state = loadState();
+
     function loadState(){
       try{
         const raw = localStorage.getItem(STORE_KEY);
@@ -651,10 +692,12 @@
         return defaultState();
       }
     }
+
     function saveState(){
       localStorage.setItem(STORE_KEY, JSON.stringify(state));
       render();
     }
+
     function todayISO(){
       const d = new Date();
       const y = d.getFullYear();
@@ -662,66 +705,79 @@
       const day = String(d.getDate()).padStart(2,"0");
       return `${y}-${m}-${day}`;
     }
+
     function daysBetween(aISO, bISO){
       const a = new Date(aISO);
       const b = new Date(bISO);
       return Math.round((b - a) / (1000*60*60*24));
     }
 
-    let state = loadState();
+    // ============================
+    // Router (each hash is its own page)
+    // ============================
+    const routes = {
+      "#landing": "landing",
+      "#training": "training",
+      "#puzzle": "puzzle",
+      "#path": "path",
+      "#notes": "notes",
+      "#analysis": "analysis",
+    };
 
-    // ----------------------------
-    // Views
-    // ----------------------------
-   function showApp(initialView = "dashboard"){
-  $("#landing").style.display = "none";
-  $("#app").style.display = "grid";
-  $("#modePill").textContent =
-    initialView === "analysis" ? "Chess.com Analysis" : "Training Hub";
-  showView(initialView);
-  render();
-}
+    function setModePill(route){
+      const map = {
+        landing: "Landing",
+        training: "Training Hub",
+        puzzle: "Puzzle",
+        path: "Study Path",
+        notes: "Notes",
+        analysis: "Chess.com Analysis",
+      };
+      $("#modePill").textContent = map[route] || "ClimbChess";
+    }
 
-    function showLanding(){
-      $("#landing").style.display = "";
-      $("#app").style.display = "none";
-      $("#modePill").textContent = "Landing";
+    function showPage(routeName){
+      $$(".page").forEach(p => p.classList.remove("active"));
+      const page = document.getElementById(`page-${routeName}`);
+      if(page) page.classList.add("active");
+
+      setModePill(routeName);
       render();
+
+      // page-specific wiring/focus
+      if(routeName === "analysis"){
+        wireChesscomUI();
+        setTimeout(() => $("#ccUser")?.focus(), 60);
+      }
+      if(routeName === "notes"){
+        setTimeout(() => $("#notes")?.focus(), 60);
+      }
     }
 
-    function showView(name){
-      $$(".view").forEach(v => v.style.display = "none");
-      const target = document.querySelector(`#view-${name}`);
-      if(target) target.style.display = "";
- function openChesscomPage(){
-  showApp("analysis");
-
-  // wait for screen to render
-  setTimeout(() => {
-    const input = document.getElementById("ccUser");
-    if(input){
-      input.focus();
-    }
-  }, 80);
-}
-
-
-      $$(".menu .btn[data-view]").forEach(b => b.style.background = "");
-      const btn = document.querySelector(`.menu .btn[data-view="${name}"]`);
-      if(btn) btn.style.background = "rgba(255,255,255,.10)";
+    function navigate(hash){
+      if(!routes[hash]) hash = "#landing";
+      window.location.hash = hash;
     }
 
-    function openChesscomPage(){
-      $("#landing").style.display = "none";
-      $("#app").style.display = "grid";
-      $("#modePill").textContent = "Chess.com Analysis";
-      showView("analysis");
-      setTimeout(() => document.getElementById("ccUser")?.focus(), 60);
+    function onRoute(){
+      const hash = window.location.hash || "#landing";
+      const routeName = routes[hash] || "landing";
+      showPage(routeName);
     }
 
-    // ----------------------------
-    // Streak logic
-    // ----------------------------
+    // Wire all data-nav buttons
+    function wireNavButtons(){
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-nav]");
+        if(!btn) return;
+        const hash = btn.getAttribute("data-nav");
+        if(hash) navigate(hash);
+      });
+    }
+
+    // ============================
+    // Streak + UI render
+    // ============================
     function markTodayDone(){
       const today = todayISO();
       if(state.lastDone === today) return;
@@ -734,27 +790,41 @@
       }
       state.lastDone = today;
       state.checklist = { puzzle:false, pattern:false, habit:false };
+
       saveState();
       alert("Saved. Nice—come back tomorrow and keep it simple.");
     }
 
-    // ----------------------------
-    // Rendering
-    // ----------------------------
     function render(){
       const streak = state.streak || 0;
-      $("#streakTag").textContent = `streak: ${streak}`;
-      $("#landingStreak").textContent = `streak: ${streak}`;
 
-      $("#kpiStreak").textContent = String(streak);
-      $("#kpiLast").textContent = state.lastDone ? state.lastDone : "—";
+      // Landing + Training header
+      const landingStreak = $("#landingStreak");
+      if(landingStreak) landingStreak.textContent = `streak: ${streak}`;
 
+      const streakTag = $("#streakTag");
+      if(streakTag) streakTag.textContent = `streak: ${streak}`;
+
+      // Today KPIs
+      const kpiStreak = $("#kpiStreak");
+      const kpiLast = $("#kpiLast");
+      if(kpiStreak) kpiStreak.textContent = String(streak);
+      if(kpiLast) kpiLast.textContent = state.lastDone ? state.lastDone : "—";
+
+      // Notes text
       const notesEl = $("#notes");
-      if(notesEl) notesEl.value = state.notes || "";
+      if(notesEl && notesEl.value !== (state.notes || "")) {
+        notesEl.value = state.notes || "";
+      }
 
-      $("#chkPuzzle").checked = !!state.checklist.puzzle;
-      $("#chkPattern").checked = !!state.checklist.pattern;
-      $("#chkHabit").checked = !!state.checklist.habit;
+      // Checklist
+      const chkPuzzle = $("#chkPuzzle");
+      const chkPattern = $("#chkPattern");
+      const chkHabit = $("#chkHabit");
+
+      if(chkPuzzle) chkPuzzle.checked = !!state.checklist.puzzle;
+      if(chkPattern) chkPattern.checked = !!state.checklist.pattern;
+      if(chkHabit) chkHabit.checked = !!state.checklist.habit;
 
       const completed =
         (state.checklist.puzzle?1:0) +
@@ -769,29 +839,28 @@
             ? "Last step: apply the habit in a game—ask what your opponent is threatening."
             : "All done. Keep it short and come back tomorrow.";
 
-      $("#todayTip").textContent = tip;
+      const todayTip = $("#todayTip");
+      if(todayTip) todayTip.textContent = tip;
     }
 
-    // ----------------------------
-    // Chess.com analysis (public API)
-    // ----------------------------
-    const CHESSCOM_USER_KEY = "cc_username_v2";
-
+    // ============================
+    // Chess.com Analysis (Public API)
+    // ============================
     async function fetchJson(url){
       const res = await fetch(url);
       if(!res.ok) throw new Error(`Request failed (${res.status})`);
       return res.json();
     }
 
-    function setCCStatus(msg, kind=""){
-      const el = document.getElementById("ccStatus");
+    function setCCStatus(msg, kind="warn"){
+      const el = $("#ccStatus");
       if(!el) return;
-      el.className = "notice " + (kind ? kind : "");
+      el.className = "notice " + (kind || "");
       el.textContent = msg;
     }
 
     function renderCCGames(games){
-      const box = document.getElementById("ccGames");
+      const box = $("#ccGames");
       if(!box) return;
 
       if(!games?.length){
@@ -814,9 +883,9 @@
     }
 
     function setCCTipsHtml(html, kind="good"){
-      const el = document.getElementById("ccTips");
+      const el = $("#ccTips");
       if(!el) return;
-      el.className = "notice " + kind;
+      el.className = "notice " + (kind || "");
       el.innerHTML = html;
     }
 
@@ -833,8 +902,8 @@
       let resigned = 0;
 
       for(const g of last){
-        const plyCount = g?.pgn ? (g.pgn.match(/\d+\./g) || []).length : 0;
-        if(plyCount && plyCount <= 20) shortGames++;
+        const moveNums = g?.pgn ? (g.pgn.match(/\d+\./g) || []).length : 0;
+        if(moveNums && moveNums <= 20) shortGames++;
 
         const w = (g.white?.result || "").toLowerCase();
         const b = (g.black?.result || "").toLowerCase();
@@ -850,9 +919,9 @@
       bullets.push(`<b>Rule #1:</b> every move = <b>Checks → Captures → Threats</b>, then “is anything hanging?”`);
 
       if(shortGames >= 2){
-        bullets.push(`<b>Quick games:</b> Several ended fast. For your next 3 games: pause 3 seconds before every move and scan threats.`);
+        bullets.push(`<b>Quick games:</b> Several ended fast. Next 3 games: pause 3 seconds before every move and scan threats.`);
       } else {
-        bullets.push(`<b>Consistency:</b> Great—keep the same thinking routine even when you’re winning.`);
+        bullets.push(`<b>Consistency:</b> Keep the same thinking routine even when you’re winning.`);
       }
 
       if(gotMated >= 1){
@@ -860,7 +929,7 @@
       }
 
       if(stalemate >= 1){
-        bullets.push(`<b>Endgame:</b> A recent draw was stalemate. When up material: trade pieces, keep pawns, and don’t give the king “no moves”.`);
+        bullets.push(`<b>Endgame:</b> You hit stalemate recently. When up material: trade pieces, keep pawns moving, and give the enemy king squares.`);
       }
 
       if(resigned >= 1){
@@ -898,218 +967,41 @@
       renderCCGames(games);
       generateTipsFromGames(games, username);
     }
-// ----------------------------
-// Chess.com analysis (public API)
-// ----------------------------
-const CHESSCOM_USER_KEY = "cc_username_v2";
-
-async function fetchJson(url){
-  const res = await fetch(url);
-  if(!res.ok) throw new Error(`Request failed (${res.status})`);
-  return res.json();
-}
-
-function setCCStatus(msg, kind=""){
-  const el = document.getElementById("ccStatus");
-  if(!el) return;
-  el.className = "notice " + (kind ? kind : "");
-  el.textContent = msg;
-}
-
-function renderCCGames(games){
-  const box = document.getElementById("ccGames");
-  if(!box) return;
-
-  if(!games?.length){
-    box.textContent = "No games found.";
-    return;
-  }
-
-  box.innerHTML = games.slice(0,5).map(g => {
-    const white = g.white?.username || "White";
-    const black = g.black?.username || "Black";
-    const result = `${g.white?.result || "?"} / ${g.black?.result || "?"}`;
-    const tc = g.time_control ? `TC ${g.time_control}` : "";
-    const link = g.url ? `<a href="${g.url}" target="_blank" rel="noopener" class="mono">Open</a>` : "";
-    return `<div style="margin-bottom:10px">
-      <b>${white}</b> vs <b>${black}</b>
-      <div class="muted" style="font-size:12px;margin-top:2px">${result} ${tc}</div>
-      <div style="margin-top:4px">${link}</div>
-    </div>`;
-  }).join("");
-}
-
-function setCCTipsHtml(html, kind="good"){
-  const el = document.getElementById("ccTips");
-  if(!el) return;
-  el.className = "notice " + kind;
-  el.innerHTML = html;
-}
-
-function generateTipsFromGames(games, username){
-  if(!games?.length){
-    setCCTipsHtml("No games found to analyze.", "warn");
-    return;
-  }
-
-  const last = games.slice(0,8);
-  let shortGames = 0;
-  let gotMated = 0;
-  let stalemate = 0;
-  let resigned = 0;
-
-  for(const g of last){
-    const plyCount = g?.pgn ? (g.pgn.match(/\d+\./g) || []).length : 0;
-    if(plyCount && plyCount <= 20) shortGames++;
-
-    const w = (g.white?.result || "").toLowerCase();
-    const b = (g.black?.result || "").toLowerCase();
-    const both = `${w} ${b}`;
-
-    if(both.includes("checkmated")) gotMated++;
-    if(both.includes("stalemate")) stalemate++;
-    if(both.includes("resigned")) resigned++;
-  }
-
-  const bullets = [];
-  bullets.push(`<b>${username}</b>: analyzed <b>${last.length}</b> recent games (latest month).`);
-  bullets.push(`<b>Rule #1:</b> every move = <b>Checks → Captures → Threats</b>, then “is anything hanging?”`);
-
-  if(shortGames >= 2){
-    bullets.push(`<b>Quick games:</b> Several ended fast. For your next 3 games: pause 3 seconds before every move and scan threats.`);
-  } else {
-    bullets.push(`<b>Consistency:</b> Keep the same thinking routine even when you’re winning.`);
-  }
-
-  if(gotMated >= 1){
-    bullets.push(`<b>King safety:</b> You got checkmated recently. Prioritize: castle early, and don’t open lines near your king.`);
-  }
-
-  if(stalemate >= 1){
-    bullets.push(`<b>Endgame:</b> A recent draw was stalemate. When up material: trade pieces, keep pawns, and don’t give the king “no moves”.`);
-  }
-
-  if(resigned >= 1){
-    bullets.push(`<b>Resign smarter:</b> Before resigning, check: (1) any checks, (2) any captures, (3) any forced trades.`);
-  }
-
-  bullets.push(`<b>10-minute plan:</b> play 1 game → write 1 sentence: “I missed ___ because I didn’t check ___.”`);
-
-  setCCTipsHtml(
-    `<ul style="margin:0 0 0 18px">${bullets.map(t => `<li style="margin:6px 0">${t}</li>`).join("")}</ul>`,
-    "good"
-  );
-}
-
-async function analyzeChesscom(username){
-  username = (username || "").trim();
-  if(!username) throw new Error("Enter a Chess.com username.");
-
-  setCCStatus("Loading archives…", "warn");
-  const archives = await fetchJson(`https://api.chess.com/pub/player/${encodeURIComponent(username)}/games/archives`);
-  const list = archives.archives || [];
-  if(!list.length) throw new Error("No archives found for that username.");
-
-  const latestArchiveUrl = list[list.length - 1];
-
-  setCCStatus("Loading games…", "warn");
-  const month = await fetchJson(latestArchiveUrl);
-
-  const games = (month.games || []);
-  games.sort((a,b) => (b.end_time || 0) - (a.end_time || 0));
-
-  localStorage.setItem(CHESSCOM_USER_KEY, username);
-
-  setCCStatus(`Loaded ${games.length} games from latest month for ${username}.`, "good");
-  renderCCGames(games);
-  generateTipsFromGames(games, username);
-}
-
-function clearChesscom(){
-  localStorage.removeItem(CHESSCOM_USER_KEY);
-  document.getElementById("ccUser").value = "";
-  setCCStatus("Waiting for username.", "warn");
-
-  const g = document.getElementById("ccGames");
-  if(g) g.textContent = "No games loaded.";
-
-  setCCTipsHtml("Enter a username and click “Analyze games” (or press Enter).", "good");
-}
-
-function wireChesscomUI(){
-  const input = document.getElementById("ccUser");
-  const btnAnalyze = document.getElementById("btnAnalyzeCC");
-  const btnClear = document.getElementById("btnClearCC");
-
-  if(btnAnalyze && !btnAnalyze.dataset.wired){
-    btnAnalyze.dataset.wired = "1";
-    btnAnalyze.onclick = async () => {
-      try{
-        await analyzeChesscom(input.value);
-      } catch(e){
-        setCCStatus(e.message || String(e), "bad");
-      }
-    };
-  }
-
-  if(btnClear && !btnClear.dataset.wired){
-    btnClear.dataset.wired = "1";
-    btnClear.onclick = clearChesscom;
-  }
-
-  if(input && !input.dataset.wired){
-    input.dataset.wired = "1";
-    input.addEventListener("keydown", (e) => {
-      if(e.key === "Enter"){
-        e.preventDefault();
-        btnAnalyze?.click();
-      }
-    });
-  }
-
-  const saved = localStorage.getItem(CHESSCOM_USER_KEY);
-  if(saved && input && !input.value){
-    input.value = saved;
-    setCCStatus(`Saved username: ${saved}. Click “Analyze games” or press Enter.`, "warn");
-  }
-}
 
     function clearChesscom(){
       localStorage.removeItem(CHESSCOM_USER_KEY);
 
-      document.getElementById("ccUser").value = "";
-      setCCStatus("Waiting for username.", "warn");
+      const input = $("#ccUser");
+      if(input) input.value = "";
 
-      const g = document.getElementById("ccGames");
+      const g = $("#ccGames");
       if(g) g.textContent = "No games loaded.";
 
+      setCCStatus("Waiting for username.", "warn");
       setCCTipsHtml("Enter a username and click “Analyze games” (or press Enter).", "good");
     }
 
     function wireChesscomUI(){
-      const input = document.getElementById("ccUser");
-      const btnAnalyze = document.getElementById("btnAnalyzeCC");
-      const btnClear = document.getElementById("btnClearCC");
+      const input = $("#ccUser");
+      const btnAnalyze = $("#btnAnalyzeCC");
+      const btnClear = $("#btnClearCC");
 
-      // analyze click
       if(btnAnalyze && !btnAnalyze.dataset.wired){
         btnAnalyze.dataset.wired = "1";
-        btnAnalyze.onclick = async () => {
+        btnAnalyze.addEventListener("click", async () => {
           try{
-            await analyzeChesscom(input.value);
+            await analyzeChesscom(input?.value || "");
           } catch(e){
             setCCStatus(e.message || String(e), "bad");
           }
-        };
+        });
       }
 
-      // clear click
       if(btnClear && !btnClear.dataset.wired){
         btnClear.dataset.wired = "1";
-        btnClear.onclick = clearChesscom;
+        btnClear.addEventListener("click", clearChesscom);
       }
 
-      // press Enter to analyze
       if(input && !input.dataset.wired){
         input.dataset.wired = "1";
         input.addEventListener("keydown", (e) => {
@@ -1120,7 +1012,6 @@ function wireChesscomUI(){
         });
       }
 
-      // restore saved username
       const saved = localStorage.getItem(CHESSCOM_USER_KEY);
       if(saved && input && !input.value){
         input.value = saved;
@@ -1128,75 +1019,82 @@ function wireChesscomUI(){
       }
     }
 
-    // ----------------------------
+    // ============================
     // Events
-    // ----------------------------
-    $("#btnStart").onclick = showApp;
-    $("#btnStart2").onclick = showApp;
-    $("#btnOpenApp").onclick = showApp;
-    $("#btnBack").onclick = showLanding;
+    // ============================
+    function wireAppEvents(){
+      // Mark done
+      $("#btnMarkDone")?.addEventListener("click", markTodayDone);
 
-    $$(".menu .btn[data-view]").forEach(b => b.onclick = () => showView(b.dataset.view));
-
-    $("#btnMarkDone").onclick = markTodayDone;
-
-    $("#btnPuzzleDone").onclick = () => {
-      state.checklist.puzzle = true;
-      saveState();
-      alert("Nice. Now write the pattern you saw (fork/pin/mate/etc.).");
-    };
-
-    $("#chkPuzzle").addEventListener("change", (e) => { state.checklist.puzzle = e.target.checked; saveState(); });
-    $("#chkPattern").addEventListener("change", (e) => { state.checklist.pattern = e.target.checked; saveState(); });
-    $("#chkHabit").addEventListener("change", (e) => { state.checklist.habit = e.target.checked; saveState(); });
-
-    $("#btnSaveNotes").onclick = () => { state.notes = $("#notes").value; saveState(); alert("Saved."); };
-    $("#btnClearNotes").onclick = () => { state.notes = ""; saveState(); };
-
-    $("#btnReset").onclick = () => {
-      if(confirm("Reset your progress and notes?")){
-        state = defaultState();
+      // Puzzle done
+      $("#btnPuzzleDone")?.addEventListener("click", () => {
+        state.checklist.puzzle = true;
         saveState();
-        alert("Reset complete.");
-      }
-    };
+        alert("Nice. Now name the pattern you saw (fork/pin/mate/etc.).");
+      });
 
-    $("#btnExport").onclick = () => {
-      const data = JSON.stringify(state, null, 2);
-      const blob = new Blob([data], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "climbchess-data.json";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    };
-    $("#btnImport").onclick = () => $("#importFile").click();
-    $("#importFile").addEventListener("change", async (e) => {
-      const file = e.target.files?.[0];
-      if(!file) return;
-      try{
-        const text = await file.text();
-        const imported = JSON.parse(text);
-        state = { ...defaultState(), ...imported };
-        saveState();
-        alert("Imported successfully.");
-      } catch {
-        alert("Import failed. Make sure it's valid JSON exported from this site.");
-      } finally {
-        e.target.value = "";
-      }
-    });
+      // Checklist changes
+      $("#chkPuzzle")?.addEventListener("change", (e) => { state.checklist.puzzle = e.target.checked; saveState(); });
+      $("#chkPattern")?.addEventListener("change", (e) => { state.checklist.pattern = e.target.checked; saveState(); });
+      $("#chkHabit")?.addEventListener("change", (e) => { state.checklist.habit = e.target.checked; saveState(); });
 
+      // Notes save/clear
+      $("#btnSaveNotes")?.addEventListener("click", () => { state.notes = $("#notes")?.value || ""; saveState(); alert("Saved."); });
+      $("#btnClearNotes")?.addEventListener("click", () => { state.notes = ""; saveState(); });
+
+      // Reset
+      $("#btnReset")?.addEventListener("click", () => {
+        if(confirm("Reset your progress and notes?")){
+          state = defaultState();
+          saveState();
+          alert("Reset complete.");
+        }
+      });
+
+      // Export / Import
+      $("#btnExport")?.addEventListener("click", () => {
+        const data = JSON.stringify(state, null, 2);
+        const blob = new Blob([data], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "climbchess-data.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
+
+      $("#btnImport")?.addEventListener("click", () => $("#importFile")?.click());
+
+      $("#importFile")?.addEventListener("change", async (e) => {
+        const file = e.target.files?.[0];
+        if(!file) return;
+        try{
+          const text = await file.text();
+          const imported = JSON.parse(text);
+          state = { ...defaultState(), ...imported };
+          saveState();
+          alert("Imported successfully.");
+        } catch {
+          alert("Import failed. Make sure it's valid JSON exported from this site.");
+        } finally {
+          e.target.value = "";
+        }
+      });
+    }
+
+    // ============================
     // Init
-    wireChesscomUI();
-    showLanding();
+    // ============================
+    wireNavButtons();
+    wireAppEvents();
+
+    window.addEventListener("hashchange", onRoute);
+
+    // Default route
+    if(!window.location.hash) window.location.hash = "#landing";
+    onRoute();
   </script>
 </body>
 </html>
-
-
-
-
