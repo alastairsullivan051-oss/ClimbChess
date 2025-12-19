@@ -223,9 +223,9 @@
           </div>
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-            <button class="btn primary" onclick="openChesscomPage()">
-              Analyze my Chess.com games
-            </button>
+          <button class="btn primary" onclick="openChesscomPage()">
+            Analyze my Chess.com games
+          </button>
             <a class="btn" href="https://www.chess.com" target="_blank" rel="noopener">Chess.com</a>
           </div>
 
@@ -692,6 +692,20 @@
       $$(".view").forEach(v => v.style.display = "none");
       const target = document.querySelector(`#view-${name}`);
       if(target) target.style.display = "";
+      function openChesscomPage(){
+  // show the app shell
+  $("#landing").style.display = "none";
+  $("#app").style.display = "grid";
+  $("#modePill").textContent = "Chess.com Analysis";
+
+  // show the dedicated analysis view
+  showView("analysis");
+
+  // wire up buttons and focus the input
+  wireChesscomUI();
+  setTimeout(() => document.getElementById("ccUser")?.focus(), 60);
+}
+
 
       $$(".menu .btn[data-view]").forEach(b => b.style.background = "");
       const btn = document.querySelector(`.menu .btn[data-view="${name}"]`);
@@ -885,6 +899,181 @@
       renderCCGames(games);
       generateTipsFromGames(games, username);
     }
+// ----------------------------
+// Chess.com analysis (public API)
+// ----------------------------
+const CHESSCOM_USER_KEY = "cc_username_v2";
+
+async function fetchJson(url){
+  const res = await fetch(url);
+  if(!res.ok) throw new Error(`Request failed (${res.status})`);
+  return res.json();
+}
+
+function setCCStatus(msg, kind=""){
+  const el = document.getElementById("ccStatus");
+  if(!el) return;
+  el.className = "notice " + (kind ? kind : "");
+  el.textContent = msg;
+}
+
+function renderCCGames(games){
+  const box = document.getElementById("ccGames");
+  if(!box) return;
+
+  if(!games?.length){
+    box.textContent = "No games found.";
+    return;
+  }
+
+  box.innerHTML = games.slice(0,5).map(g => {
+    const white = g.white?.username || "White";
+    const black = g.black?.username || "Black";
+    const result = `${g.white?.result || "?"} / ${g.black?.result || "?"}`;
+    const tc = g.time_control ? `TC ${g.time_control}` : "";
+    const link = g.url ? `<a href="${g.url}" target="_blank" rel="noopener" class="mono">Open</a>` : "";
+    return `<div style="margin-bottom:10px">
+      <b>${white}</b> vs <b>${black}</b>
+      <div class="muted" style="font-size:12px;margin-top:2px">${result} ${tc}</div>
+      <div style="margin-top:4px">${link}</div>
+    </div>`;
+  }).join("");
+}
+
+function setCCTipsHtml(html, kind="good"){
+  const el = document.getElementById("ccTips");
+  if(!el) return;
+  el.className = "notice " + kind;
+  el.innerHTML = html;
+}
+
+function generateTipsFromGames(games, username){
+  if(!games?.length){
+    setCCTipsHtml("No games found to analyze.", "warn");
+    return;
+  }
+
+  const last = games.slice(0,8);
+  let shortGames = 0;
+  let gotMated = 0;
+  let stalemate = 0;
+  let resigned = 0;
+
+  for(const g of last){
+    const plyCount = g?.pgn ? (g.pgn.match(/\d+\./g) || []).length : 0;
+    if(plyCount && plyCount <= 20) shortGames++;
+
+    const w = (g.white?.result || "").toLowerCase();
+    const b = (g.black?.result || "").toLowerCase();
+    const both = `${w} ${b}`;
+
+    if(both.includes("checkmated")) gotMated++;
+    if(both.includes("stalemate")) stalemate++;
+    if(both.includes("resigned")) resigned++;
+  }
+
+  const bullets = [];
+  bullets.push(`<b>${username}</b>: analyzed <b>${last.length}</b> recent games (latest month).`);
+  bullets.push(`<b>Rule #1:</b> every move = <b>Checks → Captures → Threats</b>, then “is anything hanging?”`);
+
+  if(shortGames >= 2){
+    bullets.push(`<b>Quick games:</b> Several ended fast. For your next 3 games: pause 3 seconds before every move and scan threats.`);
+  } else {
+    bullets.push(`<b>Consistency:</b> Keep the same thinking routine even when you’re winning.`);
+  }
+
+  if(gotMated >= 1){
+    bullets.push(`<b>King safety:</b> You got checkmated recently. Prioritize: castle early, and don’t open lines near your king.`);
+  }
+
+  if(stalemate >= 1){
+    bullets.push(`<b>Endgame:</b> A recent draw was stalemate. When up material: trade pieces, keep pawns, and don’t give the king “no moves”.`);
+  }
+
+  if(resigned >= 1){
+    bullets.push(`<b>Resign smarter:</b> Before resigning, check: (1) any checks, (2) any captures, (3) any forced trades.`);
+  }
+
+  bullets.push(`<b>10-minute plan:</b> play 1 game → write 1 sentence: “I missed ___ because I didn’t check ___.”`);
+
+  setCCTipsHtml(
+    `<ul style="margin:0 0 0 18px">${bullets.map(t => `<li style="margin:6px 0">${t}</li>`).join("")}</ul>`,
+    "good"
+  );
+}
+
+async function analyzeChesscom(username){
+  username = (username || "").trim();
+  if(!username) throw new Error("Enter a Chess.com username.");
+
+  setCCStatus("Loading archives…", "warn");
+  const archives = await fetchJson(`https://api.chess.com/pub/player/${encodeURIComponent(username)}/games/archives`);
+  const list = archives.archives || [];
+  if(!list.length) throw new Error("No archives found for that username.");
+
+  const latestArchiveUrl = list[list.length - 1];
+
+  setCCStatus("Loading games…", "warn");
+  const month = await fetchJson(latestArchiveUrl);
+
+  const games = (month.games || []);
+  games.sort((a,b) => (b.end_time || 0) - (a.end_time || 0));
+
+  localStorage.setItem(CHESSCOM_USER_KEY, username);
+
+  setCCStatus(`Loaded ${games.length} games from latest month for ${username}.`, "good");
+  renderCCGames(games);
+  generateTipsFromGames(games, username);
+}
+
+function clearChesscom(){
+  localStorage.removeItem(CHESSCOM_USER_KEY);
+  document.getElementById("ccUser").value = "";
+  setCCStatus("Waiting for username.", "warn");
+
+  const g = document.getElementById("ccGames");
+  if(g) g.textContent = "No games loaded.";
+
+  setCCTipsHtml("Enter a username and click “Analyze games” (or press Enter).", "good");
+}
+
+function wireChesscomUI(){
+  const input = document.getElementById("ccUser");
+  const btnAnalyze = document.getElementById("btnAnalyzeCC");
+  const btnClear = document.getElementById("btnClearCC");
+
+  if(btnAnalyze && !btnAnalyze.dataset.wired){
+    btnAnalyze.dataset.wired = "1";
+    btnAnalyze.onclick = async () => {
+      try{
+        await analyzeChesscom(input.value);
+      } catch(e){
+        setCCStatus(e.message || String(e), "bad");
+      }
+    };
+  }
+
+  if(btnClear && !btnClear.dataset.wired){
+    btnClear.dataset.wired = "1";
+    btnClear.onclick = clearChesscom;
+  }
+
+  if(input && !input.dataset.wired){
+    input.dataset.wired = "1";
+    input.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        btnAnalyze?.click();
+      }
+    });
+  }
+
+  const saved = localStorage.getItem(CHESSCOM_USER_KEY);
+  if(saved && input && !input.value){
+    input.value = saved;
+    setCCStatus(`Saved username: ${saved}. Click “Analyze games” or press Enter.`, "warn");
+  }
+}
 
     function clearChesscom(){
       localStorage.removeItem(CHESSCOM_USER_KEY);
@@ -1008,4 +1197,5 @@
   </script>
 </body>
 </html>
+
 
