@@ -331,8 +331,8 @@
       <main class="content views">
 
         <!-- TODAY -->
-        <div class="card pad view" id="view-dashboard">
-          <div class="sectionTitle">
+        <input id="ccUser" placeholder="Chess.com username" />
+        <div class="sectionTitle">
             <div>
               <h2>Today</h2>
               <p>Keep it short. Keep it consistent.</p>
@@ -673,13 +673,14 @@
     // ----------------------------
     // Views
     // ----------------------------
-    function showApp(){
-      $("#landing").style.display = "none";
-      $("#app").style.display = "grid";
-      $("#modePill").textContent = "Training Hub";
-      showView("dashboard");
-      render();
-    }
+   function showApp(initialView = "dashboard"){
+  $("#landing").style.display = "none";
+  $("#app").style.display = "grid";
+  $("#modePill").textContent =
+    initialView === "analysis" ? "Chess.com Analysis" : "Training Hub";
+  showView(initialView);
+  render();
+}
 
     function showLanding(){
       $("#landing").style.display = "";
@@ -692,18 +693,16 @@
       $$(".view").forEach(v => v.style.display = "none");
       const target = document.querySelector(`#view-${name}`);
       if(target) target.style.display = "";
-      function openChesscomPage(){
-  // show the app shell
-  $("#landing").style.display = "none";
-  $("#app").style.display = "grid";
-  $("#modePill").textContent = "Chess.com Analysis";
+ function openChesscomPage(){
+  showApp("analysis");
 
-  // show the dedicated analysis view
-  showView("analysis");
-
-  // wire up buttons and focus the input
-  wireChesscomUI();
-  setTimeout(() => document.getElementById("ccUser")?.focus(), 60);
+  // wait for screen to render
+  setTimeout(() => {
+    const input = document.getElementById("ccUser");
+    if(input){
+      input.focus();
+    }
+  }, 80);
 }
 
 
@@ -1197,5 +1196,6 @@ function wireChesscomUI(){
   </script>
 </body>
 </html>
+
 
 
