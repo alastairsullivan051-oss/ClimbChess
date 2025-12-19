@@ -851,6 +851,33 @@
       if(!res.ok) throw new Error(`Request failed (${res.status})`);
       return res.json();
     }
+async function analyzeChesscom(username){
+  username = (username || "").trim();
+  if(!username) throw new Error("Enter a Chess.com username.");
+
+  setCCStatus("Loading archives…", "warn");
+
+  const archives = await fetchJson(
+    `https://api.chess.com/pub/player/${encodeURIComponent(username)}/games/archives`
+  );
+
+  const list = archives.archives || [];
+  if(!list.length) throw new Error("No archives found for that username.");
+
+  const latestArchiveUrl = list[list.length - 1];
+
+  setCCStatus("Loading games…", "warn");
+  const month = await fetchJson(latestArchiveUrl);
+
+  const games = (month.games || []);
+  games.sort((a,b) => (b.end_time || 0) - (a.end_time || 0));
+
+  localStorage.setItem(CHESSCOM_USER_KEY, username);
+
+  setCCStatus(`Loaded ${games.length} games for ${username}.`, "good");
+  renderCCGames(games);
+  generateTipsFromGames(games, username);
+}
 
     function setCCStatus(msg, kind="warn"){
       const el = $("#ccStatus");
@@ -1158,8 +1185,11 @@ function generateTipsFromGames(games, username){
       if(g) g.textContent = "No games loaded.";
 
       setCCStatus("Waiting for username.", "warn");
-      setCCTipsHtml("Enter a username and click “Analyze games” (or press Enter).", "good");
-    }
+      const tips = $("#ccTips");
+if(tips){
+  tips.className = "notice good";
+  tips.textContent = "Enter a username and click “Analyze games” (or press Enter).";
+}
 
     function wireChesscomUI(){
       const input = $("#ccUser");
@@ -1278,5 +1308,6 @@ function generateTipsFromGames(games, username){
   </script>
 </body>
 </html>
+
 
 
